@@ -446,6 +446,35 @@ input[type=time].inp{color-scheme:dark;width:100%;min-width:0}
 .iadd .qnone{margin:0}
 .iedit{flex:none;background:var(--card2);border-radius:10px;padding:10px 10px;font-size:12.5px;font-weight:700;color:var(--mute);white-space:nowrap}
 
+/* Ma diète */
+.plan-empty{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;border:1.5px dashed #2E323C}
+.plan-empty b{font-size:16px}
+.phead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.phead > div b{font-size:22px;font-weight:800}
+.phead .gadd{padding:10px 14px}
+.pdone{color:var(--accent);font-weight:800;font-size:14px}
+.pmom{font-size:12.5px;font-weight:750;color:var(--mute);margin:14px 2px 6px}
+.pline{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card2);border-radius:12px;padding:10px 12px;margin-top:6px}
+.pline .pchk{width:26px;height:26px;border-radius:8px;border:2.5px solid var(--line);flex:none;display:grid;place-items:center;transition:background .15s,border-color .15s}
+.pline .pchk svg{width:15px;height:15px;stroke:#0E0F12;opacity:0}
+.pline.on .pchk{background:var(--accent);border-color:var(--accent)}
+.pline.on .pchk svg{opacity:1}
+.pline.on .fname{color:var(--mute);text-decoration:line-through}
+.pl-body{flex:1;min-width:0}
+.pl-body small{display:block;color:var(--mute);font-size:12px;margin-top:2px}
+.pline b{flex:none;font-size:14px}
+.pweek{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid #262A33}
+.pdots{display:flex;gap:6px}
+.pday{display:flex;flex-direction:column;align-items:center;gap:3px}
+.pday i{width:14px;height:14px;border-radius:5px;background:#262A33}
+.pday i.full{background:var(--accent)}
+.pday i.half{background:#FBBF24}
+.pday i.low{background:#FB923C}
+.pday i.zero{background:#3A2A2A}
+.pday i.none{background:transparent;box-shadow:inset 0 0 0 1px #2E323C}
+.pday span{font-size:10px;color:var(--dim);font-weight:700}
+.msel{margin-top:6px;background:var(--card2);color:var(--mute);border:0;border-radius:8px;padding:5px 8px;font:inherit;font-size:12px;font-weight:650}
+
 /* Toast */
 .toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translate(-50%,16px);background:#F2F3F5;color:#0E0F12;padding:12px 16px;border-radius:14px;font-weight:650;font-size:14px;display:flex;gap:16px;align-items:center;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:90;width:max-content;max-width:calc(100% - 32px)}
 .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
@@ -554,11 +583,18 @@ function sanitizeDiet(d) {
   const okId = v => (typeof v === 'string' && /^[a-z0-9]{1,40}$/i.test(v) ? v : uid());
   const nut = n => ({ kcal: num(n && n.kcal), p: num(n && n.p), c: num(n && n.c), f: num(n && n.f) });
   const moment = m => (MOMENT_IDS.includes(m) ? m : 'lunch');
-  const out = { goals: { kcal: 2500, p: 150, c: 300, f: 80 }, goalsSet: false, foods: [], meals: [], log: {}, weightHabit: null, wRange: '90', kRange: 14 };
+  const out = { goals: { kcal: 2500, p: 150, c: 300, f: 80 }, goalsSet: false, foods: [], meals: [], plan: { created: null, items: [] }, log: {}, weightHabit: null, wRange: '90', kRange: 14 };
   if (!d || typeof d !== 'object') return out;
   if (d.goals) out.goals = { kcal: num(d.goals.kcal, 2500), p: num(d.goals.p, 150), c: num(d.goals.c, 300), f: num(d.goals.f, 80) };
   out.goalsSet = !!d.goalsSet;
   out.mlFixed = !!d.mlFixed;
+  if (d.plan && Array.isArray(d.plan.items)) out.plan = {
+    created: isKey(d.plan.created) ? d.plan.created : todayKey(),
+    items: d.plan.items.filter(it => it && str(it.name).trim()).map(it => ({
+      id: okId(it.id), name: str(it.name), qty: num(it.qty, 1) || 1, unit: str(it.unit, 15) || 'g', base: num(it.base, 100) || 100,
+      n: nut(it.n), moment: moment(it.moment), mealId: typeof it.mealId === 'string' ? okId(it.mealId) : null
+    }))
+  };
   if (Array.isArray(d.meals)) out.meals = d.meals.filter(m => m && str(m.name).trim() && Array.isArray(m.items)).map(m => ({
     id: okId(m.id), name: str(m.name, 80), portions: Math.min(100, Math.max(1, Math.round(num(m.portions, 1)))),
     items: m.items.filter(it => it && str(it.name).trim()).map(it => ({ name: str(it.name), qty: num(it.qty, 0), unit: str(it.unit, 15) || 'g', base: num(it.base, 100) || 100, n: nut(it.n), manual: it.manual === true })),
@@ -574,7 +610,7 @@ function sanitizeDiet(d) {
     if (!Array.isArray(d.log[k])) return;
     const list = d.log[k].filter(e => e && str(e.name).trim()).map(e => ({
       id: okId(e.id), name: str(e.name), qty: num(e.qty, 1), unit: str(e.unit, 15) || 'portion', base: num(e.base, 1) || 1,
-      n: nut(e.n), moment: moment(e.moment), foodId: typeof e.foodId === 'string' ? okId(e.foodId) : null, quick: e.quick === true, meal: e.meal === true
+      n: nut(e.n), moment: moment(e.moment), foodId: typeof e.foodId === 'string' ? okId(e.foodId) : null, quick: e.quick === true, meal: e.meal === true, planId: typeof e.planId === 'string' ? okId(e.planId) : null
     }));
     if (list.length) out.log[k] = list;
   });
@@ -961,7 +997,8 @@ function dayTot(k) {
   (S.diet.log[k] || []).forEach(e => { const x = entryTot(e); t.kcal += x.kcal; t.p += x.p; t.c += x.c; t.f += x.f; });
   return t;
 }
-const qtyLabel = (qty, unit) => unit === 'portion' ? (qty === 1 ? '1 portion' : `${fmtNum(qty)} portions`) : `${fmtNum(qty)} ${unit}`;
+const plural = (qty, unit) => qty > 1 && !/^(g|kg|ml|cl|l|mg)$/i.test(unit) && !/[sx]$/.test(unit) ? unit + 's' : unit;
+const qtyLabel = (qty, unit) => unit === 'portion' ? (qty === 1 ? '1 portion' : `${fmtNum(qty)} portions`) : `${fmtNum(qty)} ${plural(qty, unit)}`;
 const per = f => (f.base === 1 ? `1 ${f.unit}` : `${f.base} ${f.unit}`);
 
 // Habitude qui fournit le poids : choisie, sinon la 1re habitude « valeur » en kg
@@ -982,7 +1019,7 @@ function vDiet() {
   html += `<div class="daynav" style="margin-top:0"><button class="arrow" data-act="dietPrev" aria-label="Jour précédent">${I.left}</button>
     <div class="lbl">${isT ? 'Aujourd’hui' : k === addDays(t, -1) ? 'Hier' : fmtShort(k)}${isT ? '' : `<button data-act="dietToday">Revenir à aujourd’hui</button>`}</div>
     <button class="arrow" data-act="dietNext" aria-label="Jour suivant" ${isT ? 'disabled' : ''}>${I.right}</button></div>`;
-  html += dayCard(k) + mealsHtml(k) + splitHtml(k) + kcalSection(k) + calendarHtml() + weightHtml();
+  html += dayCard(k) + planCard(k) + mealsHtml(k) + splitHtml(k) + kcalSection(k) + calendarHtml() + weightHtml();
   return html;
 }
 
@@ -1018,7 +1055,7 @@ function mealsHtml(k) {
     html += `<div class="meal"><div class="mhead"><span>${ic} ${label}</span><span>${fmtNum(r0(kc))} kcal</span></div>
       ${list.map(e => { const x = entryTot(e);
         return `<button class="frow" data-act="editEntry" data-id="${e.id}"><div><div class="fname">${esc(e.name)}</div>
-          <small>${e.quick ? '⚡ Ajout rapide' : (e.meal ? '🍲 ' : '') + esc(qtyLabel(e.qty, e.unit))} · P ${fmtG(x.p)} · G ${fmtG(x.c)} · L ${fmtG(x.f)}</small></div><b>${fmtNum(r0(x.kcal))}</b></button>`;
+          <small>${e.quick ? '⚡ Ajout rapide' : (e.planId ? '📋 ' : '') + (e.meal ? '🍲 ' : '') + esc(qtyLabel(e.qty, e.unit))} · P ${fmtG(x.p)} · G ${fmtG(x.c)} · L ${fmtG(x.f)}</small></div><b>${fmtNum(r0(x.kcal))}</b></button>`;
       }).join('')}</div>`;
   });
   return html;
@@ -1305,24 +1342,25 @@ async function offSearch(q) {
 
 /* ---------- Feuille « Ajouter un aliment » ---------- */
 function openFoodSearch(k, opt = {}) {
-  const pick = opt.pick || null;   // mode « ajouter un ingrédient à un repas »
+  const pick = opt.pick || null;   // mode « ajouter un ingrédient à un repas » ou « ajouter à ma diète » (opt.plan)
+  const plan = !!opt.plan;
   const st = { q: '', moment: defaultMoment(), off: { q: '', status: 'idle', items: [] }, ciq: 'idle', timer: null };
   const results = {};    // index → aliment, pour les clics
   openSheet('', (el, w) => {
     el.innerHTML = `<div class="shead"><button class="iconbtn" data-s="close" aria-label="Fermer">${I.close}</button>
-        <h2 style="margin:0">${pick ? 'Ajouter un ingrédient' : 'Ajouter un aliment'}</h2><span style="width:42px"></span></div>
-      <div class="mute small" style="margin:-8px 0 10px">${pick ? 'Pour ton repas' : fmtDay(k)}</div>
+        <h2 style="margin:0">${plan ? 'Ajouter à ma diète' : pick ? 'Ajouter un ingrédient' : 'Ajouter un aliment'}</h2><span style="width:42px"></span></div>
+      <div class="mute small" style="margin:-8px 0 10px">${plan ? 'Ce que tu prévois de manger chaque jour' : pick ? 'Pour ton repas' : fmtDay(k)}</div>
       <div class="momchips" id="moms"></div>
       <div class="searchbar"><input class="inp" id="fq" type="search" enterkeyhint="search" autocomplete="off" placeholder="Rechercher : riz, poulet, yaourt…"></div>
       ${pick ? '' : `<button class="quickbtn" data-s="quick">⚡ <span><b>Ajout rapide</b><small>Juste un nom, les calories et les macros</small></span></button>`}
       <div id="fres"></div>`;
-    const drawMoms = () => { if (pick) return; $('#moms', el).innerHTML = MOMENTS.map(([id, l, ic]) => `<button data-s="moment" data-v="${id}" class="${st.moment === id ? 'on' : ''}">${ic} ${l}</button>`).join(''); };
+    const drawMoms = () => { if (pick && !plan) return; $('#moms', el).innerHTML = MOMENTS.map(([id, l, ic]) => `<button data-s="moment" data-v="${id}" class="${st.moment === id ? 'on' : ''}">${ic} ${l}</button>`).join(''); };
     const row = (f, idx, canEdit) => {
       results[idx] = f;
       if (f.src === 'meal') {
         return `<div class="fitem"><button class="fpick" data-s="pick" data-i="${idx}"><div class="fname">🍲 ${esc(f.name)}</div>
           <small>${f.portions} portion${f.portions > 1 ? 's' : ''} · <b>${fmtNum(r0(f.n.kcal))} kcal</b> · P ${fmtG(f.n.p)} · G ${fmtG(f.n.c)} · L ${fmtG(f.n.f)} <span class="dim">/ portion</span></small></button>
-          <button class="act" data-s="editMeal" data-i="${idx}" aria-label="Modifier">${I.edit}</button></div>`;
+          ${plan ? '' : `<button class="act" data-s="editMeal" data-i="${idx}" aria-label="Modifier">${I.edit}</button>`}</div>`;
       }
       const sub = f.src === 'ciqual' ? f.group : f.src === 'off' ? (f.brand || 'Produit du commerce') : (f.brand ? 'Mes aliments · ' + f.brand : 'Mes aliments');
       return `<div class="fitem"><button class="fpick" data-s="pick" data-i="${idx}"><div class="fname">${esc(f.name)}</div>
@@ -1333,7 +1371,7 @@ function openFoodSearch(k, opt = {}) {
       for (const key in results) delete results[key];
       let html = '', i = 0;
       const q = st.q.trim();
-      if (!pick) {
+      if (!pick || plan) {
         const meals = q ? searchList(S.diet.meals, q, 20) : [...S.diet.meals].sort((a, b) => (b.used || 0) - (a.used || 0)).slice(0, 10);
         if (meals.length) html += `<div class="fsec">Mes repas</div>` + meals.map(m => row(mealAsFood(m), i++, false)).join('');
       }
@@ -1382,7 +1420,7 @@ function openFoodSearch(k, opt = {}) {
       const a = b.dataset.s;
       if (a === 'close') closeSheet();
       else if (a === 'moment') { st.moment = b.dataset.v; drawMoms(); }
-      else if (a === 'pick') openPortion(results[+b.dataset.i], { date: k, moment: st.moment, fromSearch: true, pick });
+      else if (a === 'pick') openPortion(results[+b.dataset.i], { date: k, moment: st.moment, fromSearch: true, pick, plan });
       else if (a === 'editMeal') openMealEditor(S.diet.meals.find(m => m.id === results[+b.dataset.i].mealId));
       else if (a === 'newMeal') openMealEditor(null);
       else if (a === 'editFood') openFoodForm(results[+b.dataset.i], name => { st.q = name; inp.value = name; draw(); });
@@ -1422,12 +1460,12 @@ function openPortion(food, ctx) {
             : `<span class="punit">${esc(food.unit === 'portion' ? 'portion(s)' : food.unit)}</span>`}</div>
         <div class="quick" style="flex-wrap:wrap">${food.serving ? `<button data-p="qty" data-v="${food.serving.qty}" class="${st.qty === food.serving.qty ? 'on' : ''}">1 portion${food.serving.label ? ' (' + esc(food.serving.label) + ')' : ''}</button>` : ''}
           ${chips.map(c => `<button data-p="qty" data-v="${c}" class="${st.qty === c ? 'on' : ''}">${fmtNum(c)}${unitIsMass ? ' ' + esc(st.unit) : ''}</button>`).join('')}</div>
-        ${ctx.pick ? '' : `<span class="l" style="margin-top:16px">Moment</span>
+        ${ctx.pick && !ctx.plan ? '' : `<span class="l" style="margin-top:16px">Moment</span>
         <div class="momchips">${MOMENTS.map(([id, l, ic]) => `<button data-p="moment" data-v="${id}" class="${st.moment === id ? 'on' : ''}">${ic} ${l}</button>`).join('')}</div>`}
         <div class="ptot"><div><b id="pk">${fmtNum(r0(tot.kcal))}</b><span>kcal</span></div>
           ${MACROS.map(([key, l, col]) => `<div style="--mc:${col}"><b id="p${key}">${fmtG(tot[key])}</b><span>${l} (g)</span></div>`).join('')}</div>
         ${!entry && food.src !== 'mine' && food.src !== 'meal' ? `<label class="keep"><input type="checkbox" id="pkeep" ${st.keep ? 'checked' : ''}> Garder dans mes aliments</label>` : ''}
-        <button class="btn" data-p="save">${entry ? 'Enregistrer' : ctx.pick ? 'Ajouter au repas' : 'Ajouter'}</button>
+        <button class="btn" data-p="save">${entry ? 'Enregistrer' : ctx.plan ? 'Ajouter à ma diète' : ctx.pick ? 'Ajouter au repas' : 'Ajouter'}</button>
         ${entry ? '<button class="btn danger" data-p="delete">Retirer du journal</button>' : ''}`;
       const q = $('#pq', el);
       q.addEventListener('input', () => {
@@ -1470,7 +1508,7 @@ function openPortion(food, ctx) {
         }
         if (ctx.pick) {
           save();
-          ctx.pick({ name: food.name, qty: st.qty, unit, base: food.base, n: { ...food.n } });
+          ctx.pick({ name: food.name, qty: st.qty, unit, base: food.base, n: { ...food.n }, moment: st.moment, mealId: food.src === 'meal' ? food.mealId : null });
           closeSheet(2); return;
         }
         if (food.src === 'meal') { const m = S.diet.meals.find(x => x.id === food.mealId); if (m) m.used = Date.now(); }
@@ -1482,6 +1520,130 @@ function openPortion(food, ctx) {
     });
   });
 }
+/* ---------- Ma diète : ce que je prévois de manger chaque jour, à cocher ---------- */
+const planItems = () => (S.diet.plan && S.diet.plan.items) || [];
+// Valeurs d'une ligne : pour un repas, on prend la portion actuelle du repas (s'il existe encore)
+function planNut(it) {
+  if (it.mealId) { const m = S.diet.meals.find(x => x.id === it.mealId); if (m) return mealPer(m); }
+  return it.n;
+}
+const planTot = it => { const n = planNut(it); return { kcal: n.kcal * it.qty / it.base, p: n.p * it.qty / it.base, c: n.c * it.qty / it.base, f: n.f * it.qty / it.base }; };
+const planEntry = (k, it) => (S.diet.log[k] || []).find(e => e.planId === it.id);
+function addPlanEntry(k, it) {
+  const e = { id: uid(), name: it.name, qty: it.qty, unit: it.unit, base: it.base, n: { ...planNut(it) }, moment: it.moment, foodId: null, meal: !!it.mealId, planId: it.id };
+  (S.diet.log[k] = S.diet.log[k] || []).push(e);
+  return e;
+}
+function removeEntry(k, e) {
+  const l = S.diet.log[k] || [], i = l.indexOf(e);
+  if (i >= 0) l.splice(i, 1);
+  if (!l.length) delete S.diet.log[k];
+}
+function tickPlan(k, it) {
+  const e = planEntry(k, it);
+  if (e) { removeEntry(k, e); save(); refresh(); return; }
+  addPlanEntry(k, it); save(); refresh();
+  const items = planItems(), done = items.filter(x => planEntry(k, x)).length;
+  if (done === items.length) toast('Diète du jour suivie à 100 % 💪');
+}
+function tickAllPlan(k) {
+  const added = planItems().filter(it => !planEntry(k, it)).map(it => addPlanEntry(k, it));
+  if (!added.length) return;
+  save(); refresh();
+  toast(`${added.length} ligne${added.length > 1 ? 's' : ''} cochée${added.length > 1 ? 's' : ''}`, 'Annuler', () => { added.forEach(e => removeEntry(k, e)); save(); refresh(); });
+}
+function planCard(k) {
+  const items = planItems();
+  let html = `<div class="section sec-row"><span>Ma diète</span><button data-act="planEdit">${items.length ? 'Modifier' : 'Définir'}</button></div>`;
+  if (!items.length) return html + `<button class="ncard plan-empty" data-act="planEdit"><b>📋 Définis ta diète</b>
+    <span class="mute small">Ajoute les aliments et repas que tu dois manger chaque jour, puis coche-les ici au fil de la journée.</span></button>`;
+  const done = items.filter(it => planEntry(k, it)).length;
+  const kcalPlan = items.reduce((s, it) => s + planTot(it).kcal, 0);
+  html += `<div class="ncard plan"><div class="phead"><div><b>${done}/${items.length}</b> cochés <span class="mute small">· ${fmtNum(r0(kcalPlan))} kcal prévues</span></div>
+      ${done < items.length ? '<button class="gadd" data-act="planAll">Tout cocher</button>' : '<span class="pdone">✓ Suivie</span>'}</div>
+    <div class="nbar" style="margin-top:10px"><i style="width:${(done / items.length * 100).toFixed(0)}%"></i></div>`;
+  MOMENTS.forEach(([id, label, ic]) => {
+    const list = items.filter(it => it.moment === id);
+    if (!list.length) return;
+    html += `<div class="pmom">${ic} ${label}</div>` + list.map(it => {
+      const on = !!planEntry(k, it), t = planTot(it);
+      return `<button class="pline ${on ? 'on' : ''}" data-act="planTick" data-id="${it.id}"><span class="pchk">${I.check}</span>
+        <div class="pl-body"><div class="fname">${it.mealId ? '🍲 ' : ''}${esc(it.name)}</div><small>${esc(qtyLabel(it.qty, it.unit))} · P ${fmtG(t.p)} · G ${fmtG(t.c)} · L ${fmtG(t.f)}</small></div>
+        <b>${fmtNum(r0(t.kcal))}</b></button>`;
+    }).join('');
+  });
+  // Suivi de la diète sur les 7 derniers jours (jusqu'au jour affiché)
+  const start = S.diet.plan.created || k;
+  let sum = 0, n = 0, dots = '';
+  for (let i = 6; i >= 0; i--) {
+    const d = addDays(k, -i);
+    if (d < start || d > todayKey()) { dots += `<div class="pday"><i class="none"></i><span>${LETTER[parse(d).getDay()]}</span></div>`; continue; }
+    const c = items.filter(it => planEntry(d, it)).length, p = c / items.length;
+    sum += p; n++;
+    dots += `<div class="pday"><i class="${p >= 1 ? 'full' : p >= .5 ? 'half' : p > 0 ? 'low' : 'zero'}" title="${Math.round(p * 100)} %"></i><span>${LETTER[parse(d).getDay()]}</span></div>`;
+  }
+  html += `<div class="pweek"><div class="pdots">${dots}</div><div class="mute small">${n ? `Suivie à <b style="color:var(--text)">${Math.round(sum / n * 100)} %</b> sur ${n} jour${n > 1 ? 's' : ''}` : ''}</div></div></div>`;
+  return html;
+}
+// Éditeur de la diète
+function openPlan() {
+  const st = { items: planItems().map(it => ({ ...it, n: { ...it.n } })) };
+  openSheet('', (el, w) => {
+    const totals = () => {
+      const t = { kcal: 0, p: 0, c: 0, f: 0 };
+      st.items.forEach(it => { const x = planTot(it); t.kcal += x.kcal; t.p += x.p; t.c += x.c; t.f += x.f; });
+      const g = S.diet.goals;
+      return `<div class="mtot"><span>Total prévu par jour (objectif ${fmtNum(g.kcal)} kcal)</span>
+        <div class="macros" style="grid-template-columns:repeat(4,1fr);margin-top:8px">${[['kcal', 'Calories', 'var(--accent)', ''], ...MACROS.map(([k2, l, c]) => [k2, l, c, ' g'])].map(([key, l, col, u]) => {
+          const goal = g[key], p = goal ? Math.min(1, t[key] / goal) : 0;
+          return `<div class="mac" style="--mc:${col}"><span>${l}</span><b>${key === 'kcal' ? fmtNum(r0(t.kcal)) : fmtG(t[key])}<small> / ${fmtNum(goal)}${u}</small></b><div class="mbar"><i style="width:${(p * 100).toFixed(0)}%"></i></div></div>`;
+        }).join('')}</div></div>`;
+    };
+    const draw = () => {
+      let rows = '';
+      MOMENTS.forEach(([id, label, ic]) => {
+        const list = st.items.map((it, i) => [it, i]).filter(([it]) => it.moment === id);
+        if (!list.length) return;
+        rows += `<div class="pmom">${ic} ${label}</div>` + list.map(([it, i]) => { const t = planTot(it);
+          return `<div class="irow"><div class="iname"><div class="fname">${it.mealId ? '🍲 ' : ''}${esc(it.name)}</div><small id="pk${i}">${fmtNum(r0(t.kcal))} kcal · P ${fmtG(t.p)} · G ${fmtG(t.c)} · L ${fmtG(t.f)}</small>
+              <select class="msel" data-i="${i}">${MOMENTS.map(([mid, ml]) => `<option value="${mid}" ${mid === it.moment ? 'selected' : ''}>${ml}</option>`).join('')}</select></div>
+            <input class="inp iq" data-i="${i}" inputmode="decimal" autocomplete="off" value="${String(it.qty).replace('.', ',')}"><span class="iu">${esc(it.unit === 'portion' ? 'port.' : it.unit)}</span>
+            <button class="act del" data-pe="rm" data-i="${i}" aria-label="Retirer">${I.close}</button></div>`; }).join('');
+      });
+      el.innerHTML = `<div class="shead"><button class="iconbtn" data-pe="close" aria-label="Fermer">${I.close}</button><h2 style="margin:0">Ma diète</h2><span style="width:42px"></span></div>
+        <div class="mute small" style="margin:-6px 0 14px;line-height:1.45">Les aliments et repas que tu prévois de manger chaque jour. Dans l’onglet Alimentation, tu les coches au fil de la journée : chaque ligne cochée s’ajoute à ton journal.</div>
+        <div class="ilist">${rows || '<div class="fempty">Ta diète est vide. Ajoute tes aliments et tes repas (meal prep compris) avec leurs quantités et leur moment.</div>'}</div>
+        <button class="qnone" data-pe="add" style="margin-top:10px">+ Ajouter un aliment ou un repas</button>
+        <div id="ptots">${totals()}</div>
+        <div class="mute small" style="margin-top:10px">Modifier ta diète ne change pas les jours déjà cochés.</div>
+        <button class="btn" data-pe="save">Enregistrer ma diète</button>`;
+      el.querySelectorAll('.iq').forEach(inp => inp.addEventListener('input', () => {
+        const i = +inp.dataset.i, v = parseFloat(inp.value.replace(',', '.'));
+        if (!(v >= 0)) return;
+        st.items[i].qty = v;
+        const t = planTot(st.items[i]);
+        $('#pk' + i, el).textContent = `${fmtNum(r0(t.kcal))} kcal · P ${fmtG(t.p)} · G ${fmtG(t.c)} · L ${fmtG(t.f)}`;
+        $('#ptots', el).innerHTML = totals();
+      }));
+      el.querySelectorAll('.msel').forEach(sel => sel.addEventListener('change', () => { st.items[+sel.dataset.i].moment = sel.value; draw(); }));
+    };
+    draw();
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-pe]'); if (!b) return;
+      const a = b.dataset.pe;
+      if (a === 'close') closeSheet();
+      else if (a === 'rm') { st.items.splice(+b.dataset.i, 1); draw(); }
+      else if (a === 'add') openFoodSearch(null, { plan: true, pick: item => { st.items.push({ id: uid(), ...item }); draw(); } });
+      else if (a === 'save') {
+        const items = st.items.filter(it => it.qty > 0).map(it => ({ id: it.id, name: it.name, qty: Math.round(it.qty * 100) / 100, unit: it.unit, base: it.base, n: it.n, moment: it.moment, mealId: it.mealId || null }));
+        S.diet.plan = { created: S.diet.plan && S.diet.plan.created && planItems().length ? S.diet.plan.created : todayKey(), items };
+        save(); closeSheet(); refresh();
+        toast(items.length ? `Diète enregistrée · ${items.length} ligne${items.length > 1 ? 's' : ''}` : 'Diète vidée');
+      }
+    });
+  }, true);
+}
+
 /* ---------- Repas composés (meal prep) ---------- */
 const itemTot = it => ({ kcal: it.n.kcal * it.qty / it.base, p: it.n.p * it.qty / it.base, c: it.n.c * it.qty / it.base, f: it.n.f * it.qty / it.base });
 function mealTotal(m) {
@@ -1777,9 +1939,16 @@ function openFoodForm(food, after) {
 
 /* ---------- Import du suivi de diète (fichier « lockin-diet ») : fusion ---------- */
 function importDiet(data) {
-  const clean = sanitizeDiet({ goals: data.goals, goalsSet: true, foods: (data.foods || []).map(f => ({ ...f, src: 'mine' })), log: data.log });
+  const clean = sanitizeDiet({ goals: data.goals, goalsSet: true, foods: (data.foods || []).map(f => ({ ...f, src: 'mine' })), log: data.log, plan: data.plan });
   const weights = data.weights && typeof data.weights === 'object' ? Object.entries(data.weights).filter(([k, v]) => /^\d{4}-\d{2}-\d{2}$/.test(k) && typeof v === 'number' && v > 0 && v < 500) : [];
-  S.diet.goals = clean.goals; S.diet.goalsSet = true;
+  // Objectifs : remplacés seulement si le fichier en contient
+  if (data.goals && typeof data.goals === 'object') { S.diet.goals = clean.goals; S.diet.goalsSet = true; }
+  // Diète : remplacée si le fichier en contient une
+  let np = 0;
+  if (data.plan && Array.isArray(data.plan.items)) {
+    S.diet.plan = { created: S.diet.plan && S.diet.plan.created && planItems().length ? S.diet.plan.created : todayKey(), items: clean.plan.items };
+    np = clean.plan.items.length;
+  }
   let nf = 0, ne = 0;
   clean.foods.forEach(f => { if (!S.diet.foods.some(x => norm(x.name) === norm(f.name))) { S.diet.foods.push(f); nf++; } });
   Object.entries(clean.log).forEach(([k, list]) => {
@@ -1792,7 +1961,7 @@ function importDiet(data) {
   if (weights.length && !h) { createWeightHabit(); h = weightHabit(); }
   weights.forEach(([k, v]) => { if (h.history[k] === undefined) h.history[k] = v; if (k < h.start) h.start = k; });
   save(); refresh();
-  return { nf, ne, nw: weights.length };
+  return { nf, ne, nw: weights.length, np };
 }
 
 /* =====================================================================
@@ -2652,7 +2821,7 @@ function openSettings() {
       <button class="setrow" data-s="export">${I.down}<span>Exporter une sauvegarde (.json)</span></button>
       <button class="setrow" data-s="import">${I.up}<span>Importer une sauvegarde ou un suivi de diète</span></button>
       <button class="setrow red" data-s="reset">${I.trash}<span>Tout effacer</span></button>
-      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.10</div>`;
+      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.12</div>`;
     };
     w._refresh = draw; draw();
     el.addEventListener('click', async e => {
@@ -2689,11 +2858,18 @@ $('#importFile').addEventListener('change', async e => {
     const nd = data.log && typeof data.log === 'object' ? Object.keys(data.log).length : 0;
     const nf = Array.isArray(data.foods) ? data.foods.length : 0;
     const nw = data.weights && typeof data.weights === 'object' ? Object.keys(data.weights).length : 0;
-    const ok = await confirmBox('Importer ton suivi de diète ?', `Tes objectifs seront remplacés. ${nf} aliment(s), ${nd} jour(s) de journal et ${nw} pesée(s) seront ajoutés à ce que tu as déjà. Tes habitudes et tâches ne changent pas.`, 'Importer');
+    const np = data.plan && Array.isArray(data.plan.items) ? data.plan.items.length : 0;
+    const parts = [];
+    if (data.goals) parts.push('Tes objectifs seront remplacés.');
+    if (np) parts.push(`Ta diète sera remplacée par celle du fichier (${np} lignes).`);
+    const add = [nf && `${nf} aliment(s)`, nd && `${nd} jour(s) de journal`, nw && `${nw} pesée(s)`].filter(Boolean);
+    if (add.length) parts.push(`${add.join(', ')} seront ajoutés à ce que tu as déjà (sans doublons).`);
+    parts.push('Tes habitudes et tâches ne changent pas.');
+    const ok = await confirmBox('Importer ce fichier de diète ?', parts.join(' '), 'Importer');
     if (!ok) return;
     closeSheet(sheets.length);
     const r = importDiet(data);
-    toast(`Diète importée : ${r.nf} aliments, ${r.ne} entrées, ${r.nw} pesée(s)`);
+    toast(r.np ? `Diète installée : ${r.np} lignes · ${r.nf} aliment(s) ajouté(s)` : `Diète importée : ${r.nf} aliments, ${r.ne} entrées, ${r.nw} pesée(s)`);
     return;
   }
   const validHabit = h => h && typeof h === 'object'
@@ -2808,6 +2984,9 @@ app.addEventListener('click', e => {
     case 'addFood': openFoodSearch(dietView); break;
     case 'quickAdd': openQuick(dietView, null, {}); break;
     case 'meals': openMeals(dietView); break;
+    case 'planEdit': openPlan(); break;
+    case 'planTick': { const it = planItems().find(x => x.id === el.dataset.id); if (it) tickPlan(dietView, it); break; }
+    case 'planAll': tickAllPlan(dietView); break;
     case 'sleepPrev': sleepView = addDays(sleepView, -1); renderMain(); break;
     case 'sleepNext': if (sleepView < todayKey()) { sleepView = addDays(sleepView, 1); renderMain(); } break;
     case 'sleepToday': sleepView = todayKey(); renderMain(); break;
