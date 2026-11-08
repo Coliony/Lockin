@@ -377,6 +377,15 @@ body.task-dragging{user-select:none;-webkit-user-select:none}
 .quickbtn small{display:block;font-size:12.5px;color:var(--mute);margin-top:1px}
 .ncard-actions .gadd{padding:0 14px;white-space:nowrap}
 
+.trep{font-size:12.5px;color:var(--mute);margin-top:3px}
+.repcustom{display:flex;align-items:center;gap:8px;margin-top:10px}
+.repcustom span{font-weight:650;color:var(--mute);flex:none}
+.repcustom .inp{width:64px;flex:none;text-align:center;padding:11px 8px}
+.repcustom .seg{flex:1;min-width:0}
+.repcustom .seg button{padding:10px 4px;font-size:13px}
+.gml{flex:none;width:112px}
+.gml button{padding:12px 8px;font-size:15px}
+
 /* Toast */
 .toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translate(-50%,16px);background:#F2F3F5;color:#0E0F12;padding:12px 16px;border-radius:14px;font-weight:650;font-size:14px;display:flex;gap:16px;align-items:center;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:90;width:max-content;max-width:calc(100% - 32px)}
 .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
@@ -450,7 +459,7 @@ function load() {
       const d = JSON.parse(raw);
       if (d && Array.isArray(d.habits)) {
         if (!Array.isArray(d.tasks)) d.tasks = [];
-        d.tasks.forEach(t => { if (![1, 2, 3, 4].includes(t.q)) t.q = null; });
+        d.tasks.forEach(t => { if (![1, 2, 3, 4].includes(t.q)) t.q = null; t.repeat = cleanRepeat(t.repeat); });
         d.diet = sanitizeDiet(d.diet);
         return d;
       }
@@ -470,6 +479,7 @@ function sanitizeDiet(d) {
   if (!d || typeof d !== 'object') return out;
   if (d.goals) out.goals = { kcal: num(d.goals.kcal, 2500), p: num(d.goals.p, 150), c: num(d.goals.c, 300), f: num(d.goals.f, 80) };
   out.goalsSet = !!d.goalsSet;
+  out.mlFixed = !!d.mlFixed;
   if (Array.isArray(d.foods)) out.foods = d.foods.filter(x => x && str(x.name).trim()).map(x => ({
     id: okId(x.id), name: str(x.name), unit: str(x.unit, 15) || 'g', base: num(x.base, 100) || 100, n: nut(x.n),
     src: ['mine', 'ciqual', 'off'].includes(x.src) ? x.src : 'mine', brand: str(x.brand, 80),
@@ -556,6 +566,37 @@ function dueInfo(t) {
   const total = Math.max(1, daysBetween(t.created, t.due) + 1);
   const used = Math.min(1, Math.max(0, (daysBetween(t.created, today) + 1) / total));
   return { diff, rel, cls, p: diff < 0 ? 1 : used };
+}
+// Répétition : { every: n, unit: 'day' | 'week' | 'month' | 'year', anchor: jour du mois d'origine }
+function cleanRepeat(r) {
+  if (!r || typeof r !== 'object' || !['day', 'week', 'month', 'year'].includes(r.unit)) return null;
+  const every = Math.round(+r.every);
+  if (!(every >= 1 && every <= 365)) return null;
+  const anchor = Math.round(+r.anchor);
+  return { every, unit: r.unit, anchor: anchor >= 1 && anchor <= 31 ? anchor : 1 };
+}
+function advanceDue(k, r) {
+  if (r.unit === 'day') return addDays(k, r.every);
+  if (r.unit === 'week') return addDays(k, 7 * r.every);
+  const d = parse(k);
+  let y = d.getFullYear(), m = d.getMonth() + (r.unit === 'month' ? r.every : 0);
+  if (r.unit === 'year') y += r.every;
+  y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+  const dim = new Date(y, m + 1, 0).getDate();
+  return keyOf(new Date(y, m, Math.min(r.anchor || d.getDate(), dim)));
+}
+// Prochaine échéance : on avance depuis l'échéance actuelle jusqu'à aujourd'hui au moins
+function nextDue(t) {
+  const today = todayKey();
+  let n = advanceDue(t.due, t.repeat), guard = 0;
+  while (n < today && guard++ < 1000) n = advanceDue(n, t.repeat);
+  return n;
+}
+function repeatLabel(r) {
+  if (!r) return '';
+  const one = { day: 'Chaque jour', week: 'Chaque semaine', month: 'Chaque mois', year: 'Chaque année' };
+  const many = { day: 'jours', week: 'semaines', month: 'mois', year: 'ans' };
+  return r.every === 1 ? one[r.unit] : `Tous les ${r.every} ${many[r.unit]}`;
 }
 const openTasks = () => S.tasks.filter(t => !t.doneAt).sort((a, b) => a.due < b.due ? -1 : a.due > b.due ? 1 : a.created < b.created ? -1 : 1);
 const doneTasks = () => S.tasks.filter(t => t.doneAt).sort((a, b) => a.doneAt < b.doneAt ? 1 : a.doneAt > b.doneAt ? -1 : 0);
@@ -1098,10 +1139,20 @@ const norm = s => String(s || '').toLowerCase().replace(/œ/g, 'oe').replace(/æ
 let CIQ = null, ciqPromise = null;
 function loadCiqual() {
   if (!ciqPromise) ciqPromise = fetch('ciqual.json').then(r => { if (!r.ok) throw new Error('ciqual'); return r.json(); }).then(d => {
-    CIQ = d.foods.map(x => ({ name: x[0], group: d.groups[x[1]], unit: 'g', base: 100, n: { kcal: x[2], p: x[3], c: x[4], f: x[5] }, src: 'ciqual', key: norm(x[0]) }));
+    CIQ = d.foods.map(x => ({ name: x[0], group: d.groups[x[1]], unit: x[6] ? 'ml' : 'g', base: 100, n: { kcal: x[2], p: x[3], c: x[4], f: x[5] }, src: 'ciqual', key: norm(x[0]) }));
+    fixLiquidUnits();
     return CIQ;
   }).catch(e => { ciqPromise = null; throw e; });
   return ciqPromise;
+}
+// Les aliments Ciqual gardés avant la v1.7 étaient tous en grammes : on passe les liquides en ml (valeurs identiques pour 100)
+function fixLiquidUnits() {
+  if (S.diet.mlFixed || !CIQ) return;
+  const liquids = new Set(CIQ.filter(c => c.unit === 'ml').map(c => norm(c.name)));
+  const fixed = new Set();
+  S.diet.foods.forEach(f => { if (f.unit === 'g' && f.base === 100 && liquids.has(norm(f.name))) { f.unit = 'ml'; fixed.add(norm(f.name)); } });
+  Object.values(S.diet.log).forEach(list => list.forEach(e => { if (e.unit === 'g' && e.base === 100 && liquids.has(norm(e.name))) e.unit = 'ml'; }));
+  S.diet.mlFixed = true; save();
 }
 // Recherche locale : tous les mots doivent apparaître ; priorité au début du nom puis aux noms courts
 function searchList(list, q, max) {
@@ -1259,6 +1310,7 @@ function openPortion(food, ctx) {
     keep: food.src !== 'mine'
   };
   const unitIsMass = food.base !== 1;
+  if (unitIsMass) st.unit = entry ? entry.unit : food.unit;
   const chips = unitIsMass ? [50, 100, 150, 200, 250] : [0.5, 1, 2, 3, 4];
   openSheet('', el => {
     const draw = () => {
@@ -1267,9 +1319,11 @@ function openPortion(food, ctx) {
         <div class="mute small">${esc(food.src === 'ciqual' ? 'Ciqual · ' + food.group : food.src === 'off' ? (food.brand || 'Open Food Facts') : food.src === 'entry' ? 'Dans ton journal' : 'Mes aliments')}
           · pour ${esc(per(food))} : ${fmtNum(r0(food.n.kcal))} kcal · P ${fmtG(food.n.p)} · G ${fmtG(food.n.c)} · L ${fmtG(food.n.f)}</div>
         <label class="l" for="pq" style="margin-top:18px">Quantité</label>
-        <div class="gcustom"><input class="inp big" id="pq" inputmode="decimal" autocomplete="off" value="${String(st.qty).replace('.', ',')}"><span class="punit">${esc(food.unit === 'portion' ? 'portion(s)' : food.unit)}</span></div>
+        <div class="gcustom"><input class="inp big" id="pq" inputmode="decimal" autocomplete="off" value="${String(st.qty).replace('.', ',')}">
+          ${unitIsMass && (st.unit === 'g' || st.unit === 'ml') ? `<div class="seg gml">${['g', 'ml'].map(u => `<button data-p="unit" data-v="${u}" class="${st.unit === u ? 'on' : ''}">${u}</button>`).join('')}</div>`
+            : `<span class="punit">${esc(food.unit === 'portion' ? 'portion(s)' : food.unit)}</span>`}</div>
         <div class="quick" style="flex-wrap:wrap">${food.serving ? `<button data-p="qty" data-v="${food.serving.qty}" class="${st.qty === food.serving.qty ? 'on' : ''}">1 portion${food.serving.label ? ' (' + esc(food.serving.label) + ')' : ''}</button>` : ''}
-          ${chips.map(c => `<button data-p="qty" data-v="${c}" class="${st.qty === c ? 'on' : ''}">${fmtNum(c)}${unitIsMass ? ' ' + esc(food.unit) : ''}</button>`).join('')}</div>
+          ${chips.map(c => `<button data-p="qty" data-v="${c}" class="${st.qty === c ? 'on' : ''}">${fmtNum(c)}${unitIsMass ? ' ' + esc(st.unit) : ''}</button>`).join('')}</div>
         <span class="l" style="margin-top:16px">Moment</span>
         <div class="momchips">${MOMENTS.map(([id, l, ic]) => `<button data-p="moment" data-v="${id}" class="${st.moment === id ? 'on' : ''}">${ic} ${l}</button>`).join('')}</div>
         <div class="ptot"><div><b id="pk">${fmtNum(r0(tot.kcal))}</b><span>kcal</span></div>
@@ -1294,6 +1348,7 @@ function openPortion(food, ctx) {
       const b = e.target.closest('[data-p]'); if (!b) return;
       const a = b.dataset.p;
       if (a === 'qty') { st.qty = +b.dataset.v; draw(); }
+      else if (a === 'unit') { const q = parseFloat($('#pq', el).value.replace(',', '.')); if (q >= 0) st.qty = q; st.unit = b.dataset.v; draw(); }
       else if (a === 'moment') { st.moment = b.dataset.v; draw(); }
       else if (a === 'delete') {
         const list = S.diet.log[ctx.date] || [], i = list.indexOf(entry);
@@ -1306,15 +1361,16 @@ function openPortion(food, ctx) {
         const v = parseFloat($('#pq', el).value.replace(',', '.'));
         if (!(v > 0)) { toast('Indique une quantité'); return; }
         st.qty = Math.round(v * 100) / 100;
-        if (entry) { entry.qty = st.qty; entry.moment = st.moment; save(); closeSheet(); refresh(); toast('Entrée modifiée'); return; }
+        const unit = unitIsMass ? st.unit : food.unit;
+        if (entry) { entry.qty = st.qty; entry.moment = st.moment; entry.unit = unit; save(); closeSheet(); refresh(); toast('Entrée modifiée'); return; }
         let foodId = food.src === 'mine' ? food.id : null;
-        if (food.src === 'mine') food.used = Date.now();
+        if (food.src === 'mine') { food.used = Date.now(); food.unit = unit; }
         else if (st.keep) {
           const same = S.diet.foods.find(x => norm(x.name) === norm(food.name));
           if (same) { same.used = Date.now(); foodId = same.id; }
-          else { const nf = { id: uid(), name: food.name, unit: food.unit, base: food.base, n: { ...food.n }, src: 'mine', brand: food.src === 'ciqual' ? 'Ciqual' : (food.brand || 'Open Food Facts'), serving: food.serving || null, moment: null, used: Date.now() }; S.diet.foods.push(nf); foodId = nf.id; }
+          else { const nf = { id: uid(), name: food.name, unit, base: food.base, n: { ...food.n }, src: 'mine', brand: food.src === 'ciqual' ? 'Ciqual' : (food.brand || 'Open Food Facts'), serving: food.serving || null, moment: null, used: Date.now() }; S.diet.foods.push(nf); foodId = nf.id; }
         }
-        const e2 = { id: uid(), name: food.name, qty: st.qty, unit: food.unit, base: food.base, n: { ...food.n }, moment: st.moment, foodId };
+        const e2 = { id: uid(), name: food.name, qty: st.qty, unit, base: food.base, n: { ...food.n }, moment: st.moment, foodId };
         (S.diet.log[ctx.date] = S.diet.log[ctx.date] || []).push(e2);
         save(); closeSheet(ctx.fromSearch ? 2 : 1); refresh();
         toast(`Ajouté · ${fmtNum(r0(entryTot(e2).kcal))} kcal`, 'Annuler', () => { const l = S.diet.log[ctx.date] || []; const j = l.indexOf(e2); if (j >= 0) l.splice(j, 1); if (!l.length) delete S.diet.log[ctx.date]; save(); refresh(); });
@@ -1528,6 +1584,7 @@ function taskCard(t) {
     <div class="tbody" data-act="tedit" data-id="${t.id}">
       <div class="tname">${esc(t.title)}</div>
       <div class="tmeta">${qTag(t)}<span class="due ${d.cls}">${d.rel}</span> · avant le ${fmtDue(t.due)}</div>
+      ${t.repeat ? `<div class="trep">🔁 ${repeatLabel(t.repeat)}</div>` : ''}
       ${t.note ? `<div class="tnote">${esc(t.note)}</div>` : ''}
       <div class="tbar"><i style="width:${Math.round(d.p * 100)}%;background:${barColor}"></i></div>
     </div></div>`;
@@ -1556,7 +1613,7 @@ function chipHtml(t) {
   const d = dueInfo(t);
   return `<div class="tchip" data-id="${t.id}" style="--qc:${t.q ? QUADS[t.q].color : 'var(--line)'}">
     <button class="tchip-check" data-act="tcheck" data-id="${t.id}" aria-label="Marquer comme faite">${I.check}</button>
-    <div class="tchip-body"><div class="tchip-title">${esc(t.title)}</div><div class="tchip-due due ${d.cls}">${d.rel}</div></div></div>`;
+    <div class="tchip-body"><div class="tchip-title">${esc(t.title)}</div><div class="tchip-due due ${d.cls}">${t.repeat ? '🔁 ' : ''}${d.rel}</div></div></div>`;
 }
 function matrixHtml(open) {
   const tray = open.filter(x => !x.q);
@@ -1642,9 +1699,24 @@ function endTaskDrag(st, drop) {
 }
 document.addEventListener('touchmove', e => { if (tdrag) e.preventDefault(); }, { passive: false });
 function toggleTask(t) {
-  if (t.doneAt) { t.doneAt = null; save(); refresh(); return; }
-  t.doneAt = todayKey(); save(); refresh();
-  toast('Tâche terminée ✓', 'Annuler', () => { t.doneAt = null; save(); refresh(); });
+  const dropNext = () => {
+    if (!t.nextId) return;
+    const i = S.tasks.findIndex(x => x.id === t.nextId && !x.doneAt);
+    if (i >= 0) S.tasks.splice(i, 1);
+    delete t.nextId;
+  };
+  if (t.doneAt) { t.doneAt = null; dropNext(); save(); refresh(); return; }
+  t.doneAt = todayKey();
+  let msg = 'Tâche terminée ✓';
+  if (t.repeat) {
+    // Tâche répétée : la suivante est créée avec la prochaine échéance
+    const due = nextDue(t), today = todayKey();
+    const nt = { id: uid(), title: t.title, due, note: t.note || '', q: t.q || null, created: t.due > today ? t.due : today, doneAt: null, repeat: { ...t.repeat } };
+    S.tasks.push(nt); t.nextId = nt.id;
+    msg = `Faite ✓ · prochaine le ${fmtDue(due)}`;
+  }
+  save(); refresh();
+  toast(msg, 'Annuler', () => { t.doneAt = null; dropNext(); save(); refresh(); });
 }
 function deleteTask(id) {
   const i = S.tasks.findIndex(x => x.id === id); if (i < 0) return;
@@ -1654,7 +1726,9 @@ function deleteTask(id) {
 }
 function openTask(t) {
   const isNew = !t;
-  const f = t ? { title: t.title, due: t.due, note: t.note || '', q: t.q || null } : { title: '', due: addDays(todayKey(), 7), note: '', q: null };
+  const f = t ? { title: t.title, due: t.due, note: t.note || '', q: t.q || null, repeat: t.repeat ? { ...t.repeat } : null } : { title: '', due: addDays(todayKey(), 7), note: '', q: null, repeat: null };
+  const REP = [['none', 'Jamais'], ['day', 'Chaque jour'], ['week', 'Chaque semaine'], ['month', 'Chaque mois'], ['year', 'Chaque année'], ['custom', 'Personnalisé']];
+  const repKind = () => !f.repeat ? 'none' : f.repeat.custom || f.repeat.every !== 1 ? 'custom' : f.repeat.unit;
   const body = () => {
     const opts = dueOptions();
     const match = opts.find(o => o.due === f.due);   // une seule option surlignée si plusieurs tombent le même jour
@@ -1666,6 +1740,11 @@ function openTask(t) {
       <div class="dues">${opts.map(o => `<button data-t="due" data-v="${o.due}" data-o="${o.id}" class="${(f.pick ? f.pick === o.id : match === o) && o.due === f.due ? 'on' : ''}">${o.label}<small>${fmtDue(o.due)}</small></button>`).join('')}</div>
       <label class="l" for="tDate" style="margin-top:14px">Ou une date précise</label>
       <input class="inp${custom ? ' picked' : ''}" id="tDate" type="date" value="${f.due}"></div>
+    <div class="field"><span class="l">Répéter</span>
+      <div class="momchips" style="flex-wrap:wrap">${REP.map(([v, l]) => `<button data-t="rep" data-v="${v}" class="${repKind() === v ? 'on' : ''}">${l}</button>`).join('')}</div>
+      ${repKind() === 'custom' ? `<div class="repcustom"><span>Tous les</span><input class="inp" id="tEvery" inputmode="numeric" maxlength="3" value="${f.repeat.every}">
+        <div class="seg">${[['day', 'jours'], ['week', 'semaines'], ['month', 'mois'], ['year', 'ans']].map(([u, l]) => `<button data-t="repUnit" data-v="${u}" class="${f.repeat.unit === u ? 'on' : ''}">${l}</button>`).join('')}</div></div>` : ''}
+      ${f.repeat ? `<div class="mute small" style="margin-top:8px">Quand tu la coches, la suivante est créée automatiquement pour le <b style="color:var(--text)">${fmtDue(advanceDue(f.due, { ...f.repeat, anchor: parse(f.due).getDate() }))}</b></div>` : ''}</div>
     <div class="field"><span class="l">Case de la matrice</span>
       <div class="qpick">${[1, 2, 3, 4].map(q => `<button data-t="q" data-v="${q}" style="--qc:${QUADS[q].color}" class="${f.q === q ? 'on' : ''}"><b>${QUADS[q].verb}</b><small>${QUADS[q].sub}</small></button>`).join('')}</div>
       <button class="qnone ${f.q ? '' : 'on'}" data-t="q" data-v="0">À classer plus tard</button></div>
@@ -1675,7 +1754,10 @@ function openTask(t) {
     ${isNew ? '' : `<button class="btn danger" data-t="delete">Supprimer la tâche</button>`}`;
   };
   openSheet('', el => {
-    const read = () => { f.title = $('#tTitle', el).value; f.note = $('#tNote', el).value; };
+    const read = () => {
+      f.title = $('#tTitle', el).value; f.note = $('#tNote', el).value;
+      const ev = $('#tEvery', el); if (ev && f.repeat) { const n = parseInt(ev.value, 10); if (n >= 1 && n <= 365) f.repeat.every = n; }
+    };
     const draw = () => {
       const st = el.scrollTop; el.innerHTML = body(); el.scrollTop = st;
       $('#tDate', el).addEventListener('change', e => { read(); if (e.target.value) { f.due = e.target.value; f.pick = null; draw(); } });
@@ -1688,12 +1770,19 @@ function openTask(t) {
       const k = b.dataset.t;
       if (k === 'due') { f.due = b.dataset.v; f.pick = b.dataset.o; draw(); }
       else if (k === 'q') { f.q = +b.dataset.v || null; draw(); }
+      else if (k === 'rep') {
+        const v = b.dataset.v;
+        f.repeat = v === 'none' ? null : v === 'custom' ? { every: f.repeat ? f.repeat.every : 2, unit: f.repeat ? f.repeat.unit : 'week', custom: true } : { every: 1, unit: v };
+        draw();
+      }
+      else if (k === 'repUnit') { f.repeat.unit = b.dataset.v; draw(); }
       else if (k === 'save') {
         const title = f.title.trim();
         if (!title) { const i = $('#tTitle', el); i.classList.add('shake'); i.focus(); setTimeout(() => i.classList.remove('shake'), 600); toast('Donne un nom à ta tâche'); return; }
         if (!/^\d{4}-\d{2}-\d{2}$/.test(f.due)) { toast('Choisis une échéance'); return; }
-        if (isNew) S.tasks.push({ id: uid(), title, due: f.due, note: f.note.trim(), q: f.q, created: todayKey(), doneAt: null });
-        else Object.assign(t, { title, due: f.due, note: f.note.trim(), q: f.q, created: t.created > f.due ? f.due : t.created });
+        const repeat = f.repeat ? cleanRepeat({ every: f.repeat.every, unit: f.repeat.unit, anchor: parse(f.due).getDate() }) : null;
+        if (isNew) S.tasks.push({ id: uid(), title, due: f.due, note: f.note.trim(), q: f.q, created: todayKey(), doneAt: null, repeat });
+        else Object.assign(t, { title, due: f.due, note: f.note.trim(), q: f.q, repeat, created: t.created > f.due ? f.due : t.created });
         save(); closeSheet(); refresh();
         toast(isNew ? 'Tâche ajoutée' : 'Modifications enregistrées');
       }
@@ -2092,7 +2181,7 @@ function openSettings() {
       <button class="setrow" data-s="export">${I.down}<span>Exporter une sauvegarde (.json)</span></button>
       <button class="setrow" data-s="import">${I.up}<span>Importer une sauvegarde ou un suivi de diète</span></button>
       <button class="setrow red" data-s="reset">${I.trash}<span>Tout effacer</span></button>
-      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.6</div>`;
+      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.7</div>`;
     };
     w._refresh = draw; draw();
     el.addEventListener('click', async e => {
@@ -2153,12 +2242,13 @@ $('#importFile').addEventListener('change', async e => {
     && typeof t.title === 'string' && t.title.trim()
     && isDate(t.due) && isDate(t.created) && (t.doneAt === null || isDate(t.doneAt))
     && (t.note === undefined || typeof t.note === 'string')
-    && (t.q === undefined || t.q === null || [1, 2, 3, 4].includes(t.q));
+    && (t.q === undefined || t.q === null || [1, 2, 3, 4].includes(t.q))
+    && (t.repeat === undefined || t.repeat === null || cleanRepeat(t.repeat) !== null);
   if (data && data.tasks === undefined) data.tasks = [];
   if (!data || !Array.isArray(data.habits) || !data.habits.every(validHabit) || !Array.isArray(data.tasks) || !data.tasks.every(validTask)) { toast('Ce fichier n’est pas une sauvegarde Lock In valide'); return; }
   const ok = await confirmBox('Importer cette sauvegarde ?', `Tes habitudes (${S.habits.length}), tâches (${S.tasks.length}) et ton suivi alimentaire actuels seront remplacés par ceux de la sauvegarde.`, 'Importer');
   if (!ok) return;
-  data.tasks.forEach(t => { if (![1, 2, 3, 4].includes(t.q)) t.q = null; });
+  data.tasks.forEach(t => { if (![1, 2, 3, 4].includes(t.q)) t.q = null; t.repeat = cleanRepeat(t.repeat); });
   data.diet = sanitizeDiet(data.diet);
   S = data; save(); closeSheet(sheets.length); refresh(); toast('Sauvegarde importée');
 });
