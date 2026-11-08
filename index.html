@@ -414,6 +414,31 @@ body.task-dragging{user-select:none;-webkit-user-select:none}
 .nprev{background:var(--card);border-radius:14px;padding:12px 14px;margin-top:14px;font-size:14px}
 .nprev b{color:#A5B4FC;font-size:18px}
 .nprev span{display:block;color:var(--mute);font-size:12.5px;margin-top:4px}
+.rate{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rate button{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--card);border-radius:12px;padding:9px 2px 8px;font-size:11px;line-height:1.15;color:var(--mute);font-weight:650;min-width:0}
+.rate button i{font-style:normal;font-size:22px;line-height:1;filter:grayscale(.6);opacity:.75}
+.rate button.on{background:var(--card2);color:var(--text);box-shadow:inset 0 0 0 2px #A5B4FC}
+.rate button.on i{filter:none;opacity:1}
+.wrapq{flex-wrap:wrap;margin-top:0}
+.wrapq button.on{color:#0E0F12;background:#A5B4FC;box-shadow:none}
+.snote{flex:none;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;align-content:center;font-weight:800;font-size:20px;color:#0E0F12;line-height:1}
+.snote small{font-size:10px;font-weight:700;opacity:.7;margin-top:1px}
+.snote.half{background:#262A33;color:var(--mute)}
+.snote.big{width:68px;height:68px;font-size:24px;border-radius:20px}
+.nnote{display:flex;align-items:center;gap:12px}
+.nnote b{font-size:15px;color:var(--text)}
+.sfeel{display:flex;align-items:center;gap:12px;margin-top:12px;background:var(--card2);border-radius:14px;padding:10px 12px}
+.sfeel b{display:block;font-size:14.5px}
+.sfeel span{display:block;font-size:12px;color:var(--mute);margin-top:2px;line-height:1.35}
+.sfeel .snotetxt{font-style:italic;color:var(--text);opacity:.8}
+.sfeel.empty{display:block;text-align:center;font-weight:700;font-size:13.5px;color:#A5B4FC}
+.sqtop{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+.sqtop b{display:block;font-size:16px}
+.sqtop span{display:block;font-size:12.5px;color:var(--mute);margin-top:2px}
+.sqtop .strend{font-weight:700;margin-top:6px;line-height:1.35}
+.strend.up{color:#A5B4FC}.strend.down{color:#FB923C}
+.sqsplit{display:grid;grid-template-columns:1fr auto 1fr auto;gap:8px;align-items:center;background:var(--card2);border-radius:12px;padding:9px 12px;margin-bottom:6px;font-size:12.5px;color:var(--mute)}
+.sqsplit b{font-size:16px;font-weight:800;margin-right:4px}
 .durpick{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:14px;padding:6px}
 .durpick button{width:48px;height:44px;border-radius:10px;background:var(--card2);font-size:22px;font-weight:700}
 .durpick b{font-size:24px;font-weight:800}
@@ -571,7 +596,15 @@ function sanitizeSleep(d) {
   if ([7, 14, 30].includes(d.range)) out.range = d.range;
   if (d.log && typeof d.log === 'object') Object.keys(d.log).forEach(k => {
     const n = d.log[k];
-    if (/^\d{4}-\d{2}-\d{2}$/.test(k) && n && isT(n.bed) && isT(n.wake)) out.log[k] = { bed: n.bed, wake: n.wake };
+    if (!(/^\d{4}-\d{2}-\d{2}$/.test(k) && n && isT(n.bed) && isT(n.wake))) return;
+    const e = { bed: n.bed, wake: n.wake };
+    const intIn = (v, a, b) => Number.isInteger(v) && v >= a && v <= b;
+    if (intIn(n.q, 1, 5)) e.q = n.q;           // qualité du sommeil (1 très mauvaise → 5 très bonne)
+    if (intIn(n.r, 1, 5)) e.r = n.r;           // reposé au réveil (1 pas du tout → 5 très bien)
+    if (intIn(n.l, 0, 3)) e.l = n.l;           // temps d'endormissement (classe 0 à 3)
+    if (intIn(n.a, 0, 3)) e.a = n.a;           // réveils dans la nuit (3 = 3 ou plus)
+    if (typeof n.note === 'string' && n.note.trim()) e.note = n.note.trim().slice(0, 80);
+    out.log[k] = e;
   });
   return out;
 }
@@ -1984,6 +2017,15 @@ function nightCheck(n) {
   const ok = { dur: d >= g.dur - g.tol, bed: bedLate <= g.tol, wake: Math.abs(wakeLate) <= g.tol };
   return { d, bedLate, wakeLate, ok, score: (ok.dur ? 1 : 0) + (ok.bed ? 1 : 0) + (ok.wake ? 1 : 0) };
 }
+// Ressenti de la nuit — questions du Consensus Sleep Diary (Carney et al., Sleep 2012)
+const SQ = [['😫', 'Très mauvaise'], ['😕', 'Mauvaise'], ['😐', 'Moyenne'], ['🙂', 'Bonne'], ['😄', 'Très bonne']];
+const SR = [['😵', 'Pas du tout'], ['🥱', 'Un peu'], ['😐', 'Moyen'], ['🙂', 'Bien'], ['💪', 'Très bien']];
+const SL = ['< 15 min', '15–30 min', '30–60 min', '> 1 h'];
+const SA = ['Aucun', '1', '2', '3 ou +'];
+// Note sur 10 = qualité (1 à 5) + sensation de repos au réveil (1 à 5)
+const nightNote = n => n && n.q && n.r ? n.q + n.r : null;
+const noteColor = v => v >= 8 ? '#818CF8' : v >= 5 ? '#FBBF24' : '#FB923C';
+const fmtNote = v => (Math.round(v * 10) / 10).toString().replace('.', ',');
 const nightLabel = k => `Nuit du ${parse(addDays(k, -1)).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })} au ${fmtShort(k)}`;
 
 function vSleep() {
@@ -1996,7 +2038,7 @@ function vSleep() {
     <div class="sec-row" style="margin:16px 2px 8px"><span class="mute small" style="font-weight:700">Objectif ${fmtDur(g.dur)} · coucher ${fmtTime(g.bed)} · lever ${fmtTime(g.wake)} · marge ${g.tol} min</span><button data-act="sleepGoals">Objectifs</button></div>`;
   if (!n) {
     html += `<div class="ncard sleep-empty"><div style="font-size:34px">🌙</div><b>Pas encore renseignée</b>
-      <span class="mute small">À quelle heure t’es-tu couché et levé ?</span>
+      <span class="mute small">À quelle heure t’es-tu couché et levé, et comment as-tu dormi ?</span>
       <button class="btn" data-act="sleepNight">Renseigner ma nuit</button></div>`;
   } else {
     const c = nightCheck(n);
@@ -2008,9 +2050,20 @@ function vSleep() {
         ${badge(c.ok.dur, 'Durée', c.d === g.dur ? 'pile' : c.d > g.dur ? `${fmtGap(c.d - g.dur)} de plus` : `il manque ${fmtGap(g.dur - c.d)}`)}
         ${badge(c.ok.bed, 'Coucher', c.bedLate === 0 ? 'à l’heure' : c.bedLate < 0 ? `${fmtGap(c.bedLate)} plus tôt` : `${fmtGap(c.bedLate)} plus tard`)}
         ${badge(c.ok.wake, 'Lever', c.wakeLate === 0 ? 'à l’heure' : c.wakeLate < 0 ? `${fmtGap(c.wakeLate)} plus tôt` : `${fmtGap(c.wakeLate)} plus tard`)}
-      </div><div class="mute small" style="margin-top:10px;text-align:center">Touche pour modifier</div></button>`;
+      </div>${nightFeel(n)}<div class="mute small" style="margin-top:10px;text-align:center">Touche pour modifier</div></button>`;
   }
   return html + sleepStats(k);
+}
+// Bloc « ressenti » de la carte de la nuit
+function nightFeel(n) {
+  const v = nightNote(n);
+  if (!v && !n.q && !n.r) return `<div class="sfeel empty">⭐ Note ta nuit pour suivre la qualité de ton sommeil</div>`;
+  const extra = [n.l !== undefined ? `endormi en ${SL[n.l]}` : '', n.a !== undefined ? (n.a === 0 ? 'aucun réveil' : `${SA[n.a]} réveil${n.a > 1 ? 's' : ''}`) : ''].filter(Boolean).join(' · ');
+  return `<div class="sfeel">
+    ${v ? `<div class="snote" style="background:${noteColor(v)}">${v}<small>/10</small></div>` : `<div class="snote half">?<small>/10</small></div>`}
+    <div><b>${n.q ? `${SQ[n.q - 1][0]} Sommeil de ${SQ[n.q - 1][1].toLowerCase()} qualité` : 'Qualité non notée'}</b>
+      <span>${n.r ? `Reposé au réveil : ${SR[n.r - 1][1].toLowerCase()}` : 'Repos au réveil non noté'}${extra ? ' · ' + extra : ''}</span>
+      ${n.note ? `<span class="snotetxt">« ${esc(n.note)} »</span>` : ''}</div></div>`;
 }
 
 // Statistiques sur 7 / 14 / 30 nuits finissant à la nuit affichée
@@ -2042,7 +2095,79 @@ function sleepStats(k) {
   html += `<div class="subhead" style="margin-top:18px">Durée de chaque nuit</div>` + sleepDurChart(nights, k);
   html += `<div class="subhead">Horaires de coucher et de lever</div>` + sleepWindowChart(nights, k);
   html += `<div class="legend" style="margin-top:8px"><span><i style="background:#818CF8"></i>Objectifs respectés</span><span><i style="background:#FBBF24"></i>1 ou 2 objectifs</span><span><i style="background:#FB923C"></i>Aucun</span></div></div>`;
+  return html + sleepQuality(nights, k, range);
+}
+
+// Qualité ressentie : moyenne, évolution, ce qui l'influence
+function sleepQuality(nights, k, range) {
+  const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+  const rated = nights.filter(x => x.n && nightNote(x.n));
+  let html = `<div class="section">Qualité de mes nuits</div><div class="ncard">`;
+  if (!rated.length) return html + `<div class="mute small" style="text-align:center;padding:10px 0 4px">Aucune nuit notée sur cette période.<br>Quand tu renseignes une nuit, réponds aux deux questions « Comment as-tu dormi ? » et « Au réveil, tu te sentais… » : elles donnent une note sur 10.</div></div>`;
+  const m = avg(rated.map(x => nightNote(x.n)));
+  // Même nombre de nuits juste avant la période affichée
+  const prev = []; for (let i = range; i < range * 2; i++) { const n = S.sleep.log[addDays(k, -i)]; if (n && nightNote(n)) prev.push(nightNote(n)); }
+  let trend = '';
+  if (prev.length >= 3 && rated.length >= 3) {
+    const d = m - avg(prev);
+    trend = Math.abs(d) < 0.3 ? `<span class="strend">= stable par rapport aux ${range} nuits d’avant (${fmtNote(avg(prev))}/10)</span>`
+      : `<span class="strend ${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲ en progrès' : '▼ en baisse'} : ${d > 0 ? '+' : '−'}${fmtNote(Math.abs(d))} par rapport aux ${range} nuits d’avant (${fmtNote(avg(prev))}/10)</span>`;
+  } else trend = `<span class="strend">L’évolution s’affichera quand tu auras noté au moins 3 nuits sur la période précédente.</span>`;
+  const mq = avg(rated.map(x => x.n.q)), mr = avg(rated.map(x => x.n.r));
+  html += `<div class="sqtop"><div class="snote big" style="background:${noteColor(m)}">${fmtNote(m)}<small>/10</small></div>
+    <div><b>Note moyenne</b><span>${rated.length} nuit${rated.length > 1 ? 's' : ''} notée${rated.length > 1 ? 's' : ''} sur ${range}</span>${trend}</div></div>
+    <div class="wstats" style="grid-template-columns:1fr 1fr">
+      <div><b>${fmtNote(mq)} / 5</b><span>qualité du sommeil · ${SQ[Math.round(mq) - 1][1].toLowerCase()}</span></div>
+      <div><b>${fmtNote(mr)} / 5</b><span>repos au réveil · ${SR[Math.round(mr) - 1][1].toLowerCase()}</span></div></div>`;
+  // Endormissement et réveils, si renseignés
+  const withL = nights.filter(x => x.n && x.n.l !== undefined), withA = nights.filter(x => x.n && x.n.a !== undefined);
+  if (withL.length || withA.length) {
+    const cnt = withL.reduce((c, x) => (c[x.n.l]++, c), [0, 0, 0, 0]), top = cnt.indexOf(Math.max(...cnt));
+    html += `<div class="wstats" style="grid-template-columns:1fr 1fr;margin-top:0">
+      <div><b>${withL.length ? SL[top] : '—'}</b><span>endormissement le plus fréquent${withL.length ? ` (${cnt[top]}/${withL.length})` : ''}</span></div>
+      <div><b>${withA.length ? fmtNote(avg(withA.map(x => x.n.a))) : '—'}</b><span>réveils par nuit en moyenne${withA.some(x => x.n.a === 3) ? ' (3 ou + compté 3)' : ''}</span></div></div>`;
+  }
+  // Ce qui joue sur la note : durée et heure de coucher
+  const split = (key, yes, no) => {
+    const a = rated.filter(x => x.c.ok[key]).map(x => nightNote(x.n)), b = rated.filter(x => !x.c.ok[key]).map(x => nightNote(x.n));
+    if (a.length < 2 || b.length < 2) return '';
+    const ma = avg(a), mb = avg(b);
+    return `<div class="sqsplit"><span>${yes}</span><b style="color:${noteColor(ma)}">${fmtNote(ma)}</b><span>${no}</span><b style="color:${noteColor(mb)}">${fmtNote(mb)}</b></div>`;
+  };
+  const sp = split('dur', 'Durée atteinte', 'Durée trop courte') + split('bed', 'Couché à l’heure', 'Couché trop tard');
+  if (sp) html += `<div class="subhead" style="margin-top:6px">Ta note selon tes objectifs</div>${sp}`;
+  html += `<div class="subhead" style="margin-top:16px">Note de chaque nuit</div>` + sleepNoteChart(nights, k);
+  html += `<div class="legend" style="margin-top:8px"><span><i style="background:#818CF8"></i>8 à 10</span><span><i style="background:#FBBF24"></i>5 à 7</span><span><i style="background:#FB923C"></i>2 à 4</span>${range >= 14 ? '<span><i style="background:#F2F3F5;height:3px;vertical-align:3px"></i>moyenne sur 7 nuits</span>' : ''}</div>`;
+  html += `<div class="mute small" style="margin-top:12px;line-height:1.45">La note reprend les deux questions de ressenti de l’agenda du sommeil standard utilisé en recherche (<i>Consensus Sleep Diary</i>) : qualité du sommeil et sensation d’être reposé, chacune de 1 à 5. À remplir de préférence dans l’heure qui suit le lever.</div></div>`;
   return html;
+}
+function sleepNoteChart(nights, k) {
+  const W = 340, H = 130, P = 4, B = 16, T = 10, n = nights.length, bw = (W - 2 * P) / n;
+  const y = v => T + (H - T - B) * (1 - v / 10);
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart">`;
+  [5, 8].forEach(v => s += `<line x1="${P}" x2="${W - P}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#20232B"/><text x="${W - P}" y="${(y(v) - 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#5A6070">${v}</text>`);
+  nights.forEach((x, i) => {
+    const bx = P + i * bw + bw * 0.16, w = bw * 0.68, v = x.n && nightNote(x.n);
+    s += `<g data-act="sleepDay" data-k="${x.k}" style="cursor:pointer"><rect x="${(P + i * bw).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
+    if (v) {
+      const hh = (H - T - B) * v / 10;
+      s += `<rect x="${bx.toFixed(1)}" y="${(H - B - hh).toFixed(1)}" width="${w.toFixed(1)}" height="${hh.toFixed(1)}" rx="${Math.min(3, w / 3).toFixed(1)}" fill="${noteColor(v)}" opacity=".9"/>`;
+      if (n <= 14) s += `<text x="${(bx + w / 2).toFixed(1)}" y="${(H - B - hh + 11).toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0E0F12">${v}</text>`;
+      if (x.k === k) s += `<rect x="${(bx - 1.5).toFixed(1)}" y="${(H - B - hh - 1.5).toFixed(1)}" width="${(w + 3).toFixed(1)}" height="${(hh + 3).toFixed(1)}" rx="4" fill="none" stroke="#F2F3F5" stroke-width="1.5"/>`;
+    } else if (x.n) s += `<text x="${(bx + w / 2).toFixed(1)}" y="${H - B - 4}" text-anchor="middle" font-size="10" fill="#5A6070">–</text>`;
+    if (n <= 14 || i % 5 === 4 || x.k === k) s += `<text x="${(bx + w / 2).toFixed(1)}" y="${H - 3}" text-anchor="middle" font-size="${n > 14 ? 9 : 10}" fill="${x.k === k ? '#F2F3F5' : '#5A6070'}" font-weight="700">${n > 14 ? parse(x.k).getDate() : LETTER[parse(x.k).getDay()]}</text>`;
+    s += `</g>`;
+  });
+  // Moyenne glissante sur 7 nuits (nuits notées seulement)
+  if (n >= 14) {
+    const pts = [];
+    nights.forEach((x, i) => {
+      const vals = []; for (let j = 0; j < 7; j++) { const m = S.sleep.log[addDays(x.k, -j)]; if (m && nightNote(m)) vals.push(nightNote(m)); }
+      if (vals.length >= 3) pts.push(`${(P + i * bw + bw / 2).toFixed(1)},${y(vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1)}`);
+    });
+    if (pts.length > 1) s += `<polyline points="${pts.join(' ')}" fill="none" stroke="#F2F3F5" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".85" pointer-events="none"/>`;
+  }
+  return s + `</svg>`;
 }
 const nightColor = c => c.score === 3 ? '#818CF8' : c.score === 0 ? '#FB923C' : '#FBBF24';
 function sleepDurChart(nights, k) {
@@ -2102,10 +2227,13 @@ function sleepWindowChart(nights, k) {
 function openNight(k) {
   const cur = S.sleep.log[k], g = S.sleep.goals;
   const prev = Object.keys(S.sleep.log).filter(x => x < k).sort().pop();
-  const st = cur ? { ...cur } : prev ? { ...S.sleep.log[prev] } : { bed: g.bed, wake: g.wake };
+  // Les heures reprennent la nuit précédente, jamais son ressenti
+  const st = cur ? { ...cur } : prev ? { bed: S.sleep.log[prev].bed, wake: S.sleep.log[prev].wake } : { bed: g.bed, wake: g.wake };
   openSheet('', el => {
+    const rateRow = (key, opts) => `<div class="rate">${opts.map(([e, l], i) => `<button data-n="set" data-k="${key}" data-v="${i + 1}" class="${st[key] === i + 1 ? 'on' : ''}"><i>${e}</i>${l}</button>`).join('')}</div>`;
+    const chips = (key, opts) => `<div class="quick wrapq">${opts.map((l, i) => `<button data-n="set" data-k="${key}" data-v="${i}" class="${st[key] === i ? 'on' : ''}">${l}</button>`).join('')}</div>`;
     const draw = () => {
-      const c = nightCheck(st);
+      const c = nightCheck(st), v = nightNote(st);
       el.innerHTML = `<div class="grab"></div><h2>${cur ? 'Modifier la nuit' : 'Renseigner la nuit'}</h2>
         <div class="mute small" style="margin-bottom:16px">${nightLabel(k)}</div>
         <div class="goalgrid">
@@ -2113,23 +2241,39 @@ function openNight(k) {
           <div><label class="l" for="nw">☀️ Lever</label><input class="inp big" id="nw" type="time" value="${st.wake}"></div></div>
         <div class="nprev"><b>${fmtDur(c.d)}</b> de sommeil · ${c.score}/3 objectifs
           <span>${c.ok.dur ? '✓' : '✗'} durée · ${c.ok.bed ? '✓' : '✗'} coucher · ${c.ok.wake ? '✓' : '✗'} lever</span></div>
+        <div class="field" style="margin-top:20px"><span class="l">Comment évalues-tu la qualité de ton sommeil ?</span>${rateRow('q', SQ)}</div>
+        <div class="field"><span class="l">Au réveil, tu te sentais reposé…</span>${rateRow('r', SR)}</div>
+        <div class="nprev nnote">${v ? `<div class="snote" style="background:${noteColor(v)}">${v}<small>/10</small></div><div><b>Note de la nuit</b><span>qualité ${st.q}/5 + repos ${st.r}/5</span></div>`
+          : `<div class="snote half">?<small>/10</small></div><div><b>Note de la nuit</b><span>Réponds aux deux questions pour l’obtenir (facultatif)</span></div>`}</div>
+        <div class="subhead" style="margin-top:18px">Plus de détails <span style="font-weight:500">(facultatif)</span></div>
+        <div class="field"><span class="l">Temps pour t’endormir</span>${chips('l', SL)}</div>
+        <div class="field"><span class="l">Réveils pendant la nuit</span>${chips('a', SA)}</div>
+        <div class="field"><label class="l" for="nn">Remarque</label><input class="inp" id="nn" maxlength="80" placeholder="Ex. café tard, malade, écran au lit…" value="${esc(st.note || '')}"></div>
         <button class="btn" data-n="save">Enregistrer</button>
         ${cur ? '<button class="btn danger" data-n="delete">Effacer cette nuit</button>' : ''}`;
       ['nb', 'nw'].forEach(id => $('#' + id, el).addEventListener('change', e => {
         if (!e.target.value) return;
         st[id === 'nb' ? 'bed' : 'wake'] = e.target.value.slice(0, 5); draw();
       }));
+      $('#nn', el).addEventListener('input', e => { st.note = e.target.value; });
     };
     draw();
     el.addEventListener('click', e => {
       const b = e.target.closest('[data-n]'); if (!b) return;
-      if (b.dataset.n === 'save') {
+      if (b.dataset.n === 'set') {
+        const key = b.dataset.k, v = +b.dataset.v, top = el.scrollTop;
+        if (st[key] === v) delete st[key]; else st[key] = v;   // toucher à nouveau = effacer
+        draw(); el.scrollTop = top;
+      } else if (b.dataset.n === 'save') {
         const bed = $('#nb', el).value.slice(0, 5), wake = $('#nw', el).value.slice(0, 5);
         if (!/^\d{2}:\d{2}$/.test(bed) || !/^\d{2}:\d{2}$/.test(wake)) { toast('Indique les deux heures'); return; }
         if (bed === wake) { toast('Le coucher et le lever ne peuvent pas être à la même heure'); return; }
-        S.sleep.log[k] = { bed, wake }; save(); closeSheet(); refresh();
-        const c = nightCheck(S.sleep.log[k]);
-        toast(`Nuit enregistrée · ${fmtDur(c.d)} · ${c.score}/3 objectifs`);
+        const e2 = { bed, wake };
+        ['q', 'r', 'l', 'a'].forEach(x => { if (st[x] !== undefined) e2[x] = st[x]; });
+        const note = ($('#nn', el).value || '').trim().slice(0, 80); if (note) e2.note = note;
+        S.sleep.log[k] = e2; save(); closeSheet(); refresh();
+        const c = nightCheck(e2), v = nightNote(e2);
+        toast(`Nuit enregistrée · ${fmtDur(c.d)} · ${c.score}/3 objectifs${v ? ` · ${v}/10` : ''}`);
       } else if (b.dataset.n === 'delete') {
         const old = S.sleep.log[k]; delete S.sleep.log[k]; save(); closeSheet(); refresh();
         toast('Nuit effacée', 'Annuler', () => { S.sleep.log[k] = old; save(); refresh(); });
@@ -2821,7 +2965,7 @@ function openSettings() {
       <button class="setrow" data-s="export">${I.down}<span>Exporter une sauvegarde (.json)</span></button>
       <button class="setrow" data-s="import">${I.up}<span>Importer une sauvegarde ou un suivi de diète</span></button>
       <button class="setrow red" data-s="reset">${I.trash}<span>Tout effacer</span></button>
-      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.12</div>`;
+      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.13</div>`;
     };
     w._refresh = draw; draw();
     el.addEventListener('click', async e => {
