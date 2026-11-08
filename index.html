@@ -446,12 +446,44 @@ body.task-dragging{user-select:none;-webkit-user-select:none}
 .napon{display:flex;align-items:center;gap:12px}
 .napon b{display:block;font-size:15px}
 .napon span{display:block;font-size:12.5px;color:var(--mute);margin-top:3px;line-height:1.35}
-.napend{display:flex;align-items:center;color:var(--mute)}
 .napverdict{display:flex;flex-direction:column;gap:8px;margin-top:4px}
 .napverdict div{display:grid;grid-template-columns:8px 1fr;column-gap:10px;background:var(--card);border-radius:12px;padding:10px 12px}
 .napverdict i{grid-row:span 2;border-radius:3px}
 .napverdict b{font-size:14px}
 .napverdict span{font-size:12.5px;color:var(--mute);line-height:1.4;margin-top:2px}
+.napcmp{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;margin-top:10px;background:var(--card);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--mute)}
+.napcmp b{color:var(--text)}
+.napcmp>span:last-child{font-weight:800}
+.napcmp.ok>span:last-child{color:#A5B4FC}.napcmp.over>span:last-child{color:#FB923C}.napcmp.under>span:last-child{color:#FBBF24}
+.napitem em{font-style:normal;font-weight:700}.napitem em.gok{color:#A5B4FC}.napitem em.gko{color:#FB923C}.napitem em.gun{color:#FBBF24}
+.napitem b small{font-size:12px;font-weight:600}
+.zrate{grid-template-columns:repeat(5,1fr)}
+.cafhead{display:flex;justify-content:space-between;align-items:baseline;margin-top:18px}
+.cafhead b{font-size:18px;font-weight:800}.cafhead b small{font-size:12px;color:var(--mute);font-weight:600}.cafhead b.warn{color:#FB923C}
+.cafbar{height:8px;border-radius:5px;background:var(--card2);margin:8px 0 10px;overflow:hidden}.cafbar i{display:block;height:100%;border-radius:5px}
+.cafitem{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card2);border-radius:12px;padding:9px 12px;margin-bottom:6px}
+.cafitem>i{flex:none;width:6px;align-self:stretch;border-radius:3px}
+.cafitem b{display:block;font-size:14px}.cafitem span{display:block;font-size:12px;color:var(--mute);margin-top:2px;line-height:1.35}
+.cafitem em{font-style:normal;color:#FB923C;font-weight:700}
+.cafquick{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.cafquick button{font-size:13px;font-weight:650;background:var(--card2);color:var(--text);padding:8px 11px;border-radius:999px}
+.cafgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.cafgrid button{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);border-radius:12px;padding:9px 4px;text-align:center;min-width:0}
+.cafgrid i{font-style:normal;font-size:20px}.cafgrid b{font-size:12px;line-height:1.2}.cafgrid span{font-size:10.5px;color:var(--mute);line-height:1.25}
+.cafgrid button.on{background:var(--card2);box-shadow:inset 0 0 0 2px #A5B4FC}
+.cafmg{display:flex;align-items:center;color:var(--mute)}
+.anres{background:var(--card2);border-radius:12px;padding:11px 13px;margin-bottom:10px;font-size:13.5px;line-height:1.45}
+.anres span{display:block;color:var(--mute);font-size:12.5px;margin-bottom:4px}
+.anitem,.anrow{display:grid;grid-template-columns:8px 1fr;column-gap:10px;padding:8px 2px;border-top:1px solid var(--line)}
+.anitem i,.anrow i{grid-row:span 2;border-radius:3px}
+.anitem b{font-size:14px}.anitem span{font-size:12.5px;color:var(--mute);line-height:1.45;margin-top:2px}
+.anrow{grid-template-columns:8px 1fr;border-top:none;background:var(--card2);border-radius:12px;padding:9px 12px;margin-bottom:6px}
+.anrow>div b{display:block;font-size:13.5px}.anrow>div span{display:block;font-size:12px;color:var(--mute);margin-top:2px;line-height:1.4}
+.anrow i{grid-row:auto}
+.srcs{margin-top:12px;font-size:12px;color:var(--mute)}
+.srcs summary{cursor:pointer;font-weight:700;color:#A5B4FC}
+.srcs ol{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;line-height:1.4}
+.srcs a{color:#A5B4FC;font-weight:700}
 .naprow{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;background:var(--card2);border-radius:12px;padding:9px 12px;margin-bottom:6px;font-size:12.5px;color:var(--mute)}
 .naprow b{grid-column:1/-1;color:var(--text);font-size:13.5px}
 .napwarn{margin-top:12px;background:color-mix(in srgb,#FB923C 14%,var(--card));border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.4}
@@ -606,7 +638,7 @@ function load() {
 // Sommeil : une nuit est rangée à la date du réveil ({ bed: 'HH:MM', wake: 'HH:MM' })
 function sanitizeSleep(d) {
   const isT = v => typeof v === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
-  const out = { goals: { dur: 480, bed: '23:00', wake: '07:00', tol: 30 }, goalsSet: false, log: {}, range: 14, naps: {}, napOn: null };
+  const out = { goals: { dur: 480, bed: '23:00', wake: '07:00', tol: 30 }, goalsSet: false, log: {}, range: 14, naps: {}, napOn: null, caf: {}, day: {} };
   if (!d || typeof d !== 'object') return out;
   // Siestes : naps[date] = [{ s: début 'HH:MM', d: durée en min, t: 0 volontaire / 1 assoupi, f?: 1 groggy · 2 pareil · 3 en forme, c?: 1 café avant }]
   if (d.naps && typeof d.naps === 'object') Object.keys(d.naps).forEach(k => {
@@ -615,11 +647,28 @@ function sanitizeSleep(d) {
       const e = { s: n.s, d: n.d, t: n.t === 1 ? 1 : 0 };
       if ([1, 2, 3].includes(n.f)) e.f = n.f;
       if (n.c === 1) e.c = 1;
+      if (Number.isInteger(n.p) && n.p >= 1 && n.p <= 300) e.p = n.p;   // durée prévue (min)
       return e;
     }).sort((x, y) => x.s.localeCompare(y.s));
     if (list.length) out.naps[k] = list;
   });
-  if (d.napOn && /^\d{4}-\d{2}-\d{2}$/.test(d.napOn.k) && isT(d.napOn.s) && typeof d.napOn.at === 'number' && Date.now() - d.napOn.at < 12 * 3600000) out.napOn = { k: d.napOn.k, s: d.napOn.s, at: d.napOn.at };
+  // Caféine : caf[date] = [{ t: 'HH:MM', k: boisson, mg, q?: quantité, l?: nom libre }]
+  if (d.caf && typeof d.caf === 'object') Object.keys(d.caf).forEach(k => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !Array.isArray(d.caf[k])) return;
+    const list = d.caf[k].filter(c => c && isT(c.t) && typeof c.mg === 'number' && isFinite(c.mg) && c.mg > 0 && c.mg <= 1000).slice(0, 20).map(c => {
+      const e = { t: c.t, k: typeof c.k === 'string' && /^[a-z]{2,8}$/.test(c.k) ? c.k : 'autre', mg: Math.round(c.mg) };
+      if (typeof c.q === 'number' && c.q > 0 && c.q <= 10) e.q = c.q;
+      if (typeof c.l === 'string' && c.l.trim()) e.l = c.l.trim().slice(0, 30);
+      return e;
+    }).sort((x, y) => x.t.localeCompare(y.t));
+    if (list.length) out.caf[k] = list;
+  });
+  // Fatigue de la journée : day[date] = { z: 1 pleine forme … 5 épuisé }
+  if (d.day && typeof d.day === 'object') Object.keys(d.day).forEach(k => {
+    const z = d.day[k] && d.day[k].z;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(k) && [1, 2, 3, 4, 5].includes(z)) out.day[k] = { z };
+  });
+  if (d.napOn && /^\d{4}-\d{2}-\d{2}$/.test(d.napOn.k) && isT(d.napOn.s) && typeof d.napOn.at === 'number' && Date.now() - d.napOn.at < 12 * 3600000) out.napOn = { k: d.napOn.k, s: d.napOn.s, at: d.napOn.at, ...(Number.isInteger(d.napOn.p) && d.napOn.p >= 1 && d.napOn.p <= 300 ? { p: d.napOn.p } : {}) };
   if (d.goals) {
     const g = d.goals;
     out.goals = { dur: Number.isInteger(g.dur) && g.dur >= 60 && g.dur <= 900 ? g.dur : 480, bed: isT(g.bed) ? g.bed : '23:00', wake: isT(g.wake) ? g.wake : '07:00', tol: [0, 15, 30, 45, 60].includes(g.tol) ? g.tol : 30 };
@@ -2148,7 +2197,7 @@ function vSleep() {
         ${badge(c.ok.wake, 'Lever', c.wakeLate === 0 ? 'à l’heure' : c.wakeLate < 0 ? `${fmtGap(c.wakeLate)} plus tôt` : `${fmtGap(c.wakeLate)} plus tard`)}
       </div>${nightFeel(n)}<div class="mute small" style="margin-top:10px;text-align:center">Touche pour modifier</div></button>`;
   }
-  return html + napDayCard(k, n) + sleepStats(k);
+  return html + nightAnalysis(k) + sleepDayCard(k) + napDayCard(k, n) + weekAnalysis(k) + sleepStats(k);
 }
 // Bloc « ressenti » de la carte de la nuit
 function nightFeel(n) {
@@ -2343,6 +2392,8 @@ function napCheck(n) {
   else time = [1, 'Horaire correct', 'En dehors du creux de 13 h–15 h, mais assez tôt pour ne pas gêner ta nuit.'];
   return { dur, time, end: en, good: dur[0] === 2 && time[0] >= 1, bad: dur[0] === 0 || time[0] === 0 };
 }
+// Écart entre la durée réellement dormie et la durée prévue (à 5 min près = comme prévu)
+const napGap = n => { if (!n.p) return null; const x = n.d - n.p; return { x, ok: Math.abs(x) <= 5, txt: Math.abs(x) <= 5 ? 'comme prévu' : x > 0 ? `${fmtDur(x)} de plus que prévu` : `${fmtDur(-x)} de moins que prévu` }; };
 const lvlColor = l => l === 2 ? '#818CF8' : l === 1 ? '#FBBF24' : '#FB923C';
 const napColor = c => c.good ? '#818CF8' : c.bad ? '#FB923C' : '#FBBF24';
 
@@ -2352,7 +2403,7 @@ function napDayCard(k, night) {
   if (on && on.k === k) {
     const el = Math.max(0, Math.round((Date.now() - on.at) / 60000));
     html += `<div class="napon"><div class="snote" style="background:#A5B4FC">💤</div><div><b>Sieste en cours depuis <span class="napclock">${fmtGap(el)}</span></b>
-      <span>Commencée à ${fmtTime(on.s)} · réveil conseillé vers ${fmtTime(tStr(tMin(on.s) + 25))} (≈ 5 min pour t’endormir + 20 min de sieste)</span></div></div>
+      <span>Commencée à ${fmtTime(on.s)} · réveil conseillé vers ${fmtTime(tStr(tMin(on.s) + 5 + (on.p || 20)))} (≈ 5 min pour t’endormir + ${fmtDur(on.p || 20)} de sieste${on.p ? ' prévue' : ''})</span></div></div>
       <div class="ncard-actions"><button class="btn" data-act="napStop">☀️ Je suis réveillé</button><button class="gadd" data-act="napCancel">Annuler</button></div>`;
   }
   if (naps.length) {
@@ -2360,8 +2411,8 @@ function napDayCard(k, night) {
       const c = napCheck(n);
       return `<button class="napitem" data-act="napEdit" data-k="${k}" data-i="${i}">
         <i style="background:${napColor(c)}"></i>
-        <div><b>${n.t ? '💤 Assoupi' : '😴 Sieste'} de ${fmtDur(n.d)}${n.c ? ' ☕' : ''}</b>
-          <span>${fmtTime(n.s)} → ${fmtTime(tStr(c.end))} · ${c.dur[1].toLowerCase()} · ${c.time[1].toLowerCase()}${n.f ? ` · ${NAP_FEEL[n.f - 1][0]} ${NAP_FEEL[n.f - 1][1].toLowerCase()} au réveil` : ''}</span></div></button>`;
+        <div><b>${n.t ? '💤 Assoupi' : '😴 Sieste'} de ${fmtDur(n.d)}${n.p ? ` <small class="mute">· prévu ${fmtDur(n.p)}</small>` : ''}${n.c ? ' ☕' : ''}</b>
+          <span>${fmtTime(n.s)} → ${fmtTime(tStr(c.end))}${n.p ? ` · <em class="${napGap(n).ok ? 'gok' : napGap(n).x > 0 ? 'gko' : 'gun'}">${napGap(n).txt}</em>` : ''} · ${c.dur[1].toLowerCase()} · ${c.time[1].toLowerCase()}${n.f ? ` · ${NAP_FEEL[n.f - 1][0]} ${NAP_FEEL[n.f - 1][1].toLowerCase()} au réveil` : ''}</span></div></button>`;
     }).join('');
     const tot = napMin(k);
     if (night) html += `<div class="pace" style="margin:10px 2px 2px">Sommeil sur 24 h : <b>${fmtDur(nightDur(night))}</b> de nuit + <b>${fmtDur(tot)}</b> de sieste = <b>${fmtDur(nightDur(night) + tot)}</b></div>`;
@@ -2373,18 +2424,25 @@ function napDayCard(k, night) {
 function openNap(k, idx, preset) {
   const list = napsOf(k), cur = idx !== undefined ? list[idx] : null;
   const st = cur ? { ...cur } : { s: '14:00', d: 20, t: 0, ...(preset || {}) };
+  let touched = !!cur || !!(preset && preset.d);   // la durée réelle a-t-elle été donnée ?
   openSheet('', el => {
     const draw = () => {
       const c = napCheck(st), top = el.scrollTop;
       el.innerHTML = `<div class="grab"></div><h2>${cur ? 'Modifier la sieste' : 'Noter une sieste'}</h2>
         <div class="mute small" style="margin-bottom:16px">${fmtDay(k)}</div>
         <div class="seg" style="margin-bottom:16px"><button data-p="t" data-v="0" class="${st.t ? '' : 'on'}">😴 Sieste voulue</button><button data-p="t" data-v="1" class="${st.t ? 'on' : ''}">💤 Assoupi sans le vouloir</button></div>
+        ${st.t ? '' : `<div class="field"><span class="l">Durée prévue <span style="font-weight:500">(ce que tu voulais dormir)</span></span>
+          ${st.p ? `<div class="durpick"><button data-p="pm">−</button><b>${fmtDur(st.p)}</b><button data-p="pp">+</button></div>` : ''}
+          <div class="quick wrapq">${NAP_DUR.map(v => `<button data-p="pv" data-v="${v}" class="${st.p === v ? 'on' : ''}">${v === 26 ? '26 min · NASA' : v + ' min'}</button>`).join('')}</div>
+          ${st.p ? '' : '<div class="mute small" style="margin-top:6px">Facultatif. Touche à nouveau une durée pour l’enlever.</div>'}</div>`}
         <div class="goalgrid">
           <div><label class="l" for="ps">Début</label><input class="inp big" id="ps" type="time" value="${st.s}"></div>
-          <div><span class="l">Fin</span><div class="inp big napend">${fmtTime(tStr(c.end))}</div></div></div>
-        <div class="field" style="margin-top:16px"><span class="l">Durée (de l’endormissement au réveil)</span>
+          <div><label class="l" for="pe">Fin</label><input class="inp big" id="pe" type="time" value="${tStr(c.end)}"></div></div>
+        <div class="mute small" style="margin-top:8px">Indique le début et la fin, ou le début et une durée : l’autre se calcule tout seul.</div>
+        <div class="field" style="margin-top:16px"><span class="l">Durée réelle <span style="font-weight:500">(le temps vraiment dormi)</span></span>
           <div class="durpick"><button data-p="dm">−</button><b>${fmtDur(st.d)}</b><button data-p="dp">+</button></div>
-          <div class="quick wrapq">${NAP_DUR.map(v => `<button data-p="d" data-v="${v}" class="${st.d === v ? 'on' : ''}">${v === 26 ? '26 min · NASA' : v + ' min'}</button>`).join('')}</div></div>
+          <div class="quick wrapq">${NAP_DUR.map(v => `<button data-p="d" data-v="${v}" class="${st.d === v ? 'on' : ''}">${v === 26 ? '26 min · NASA' : v + ' min'}</button>`).join('')}</div>
+          ${!st.t && st.p ? (g => `<div class="napcmp ${g.ok ? 'ok' : g.x > 0 ? 'over' : 'under'}"><span>Prévu <b>${fmtDur(st.p)}</b></span><span>Dormi <b>${fmtDur(st.d)}</b></span><span>${g.ok ? '✓ comme prévu' : (g.x > 0 ? '+' : '−') + ' ' + fmtDur(Math.abs(g.x))}</span></div>`)(napGap(st)) : ''}</div>
         <div class="napverdict">
           <div><i style="background:${lvlColor(c.dur[0])}"></i><b>${c.dur[1]}</b><span>${c.dur[2]}</span></div>
           <div><i style="background:${lvlColor(c.time[0])}"></i><b>${c.time[1]}</b><span>${c.time[2]}</span></div></div>
@@ -2393,7 +2451,22 @@ function openNap(k, idx, preset) {
         <button class="qnone ${st.c ? 'on' : ''}" data-p="c" style="text-align:left;padding:12px 14px">☕ Café bu juste avant <span class="dim" style="font-weight:500">— « sieste-café » : la caféine agit au moment du réveil</span></button>
         <button class="btn" data-p="save" style="margin-top:16px">Enregistrer</button>
         ${cur ? '<button class="btn danger" data-p="delete">Effacer cette sieste</button>' : ''}`;
-      $('#ps', el).addEventListener('change', e => { if (e.target.value) { st.s = e.target.value.slice(0, 5); draw(); } });
+      // Minutes entre deux heures (passage de minuit compris) ; null si hors de 1 min à 5 h
+      const gap = (from, to) => { const m = (tMin(to) - tMin(from) + 1440) % 1440; return m >= 1 && m <= 300 ? m : null; };
+      // Nouveau début : la fin ne bouge pas si elle reste cohérente, sinon c'est la durée qui est gardée
+      $('#ps', el).addEventListener('change', e => {
+        if (!e.target.value) return;
+        const ns = e.target.value.slice(0, 5), m = gap(ns, tStr(tMin(st.s) + st.d));
+        st.s = ns; if (m) st.d = m; draw();
+      });
+      // Nouvelle fin : la durée est recalculée
+      $('#pe', el).addEventListener('change', e => {
+        if (!e.target.value) return;
+        touched = true;
+        const m = gap(st.s, e.target.value.slice(0, 5));
+        if (m) st.d = m; else toast('La fin doit être après le début (5 h maximum)');
+        draw();
+      });
       el.scrollTop = top;
     };
     draw();
@@ -2401,16 +2474,19 @@ function openNap(k, idx, preset) {
       const b = e.target.closest('[data-p]'); if (!b) return;
       const a = b.dataset.p, v = +b.dataset.v;
       if (a === 't') { st.t = v; draw(); }
-      else if (a === 'dm') { st.d = Math.max(1, st.d - 5); draw(); }
-      else if (a === 'dp') { st.d = Math.min(300, st.d + 5); draw(); }
-      else if (a === 'd') { st.d = v; draw(); }
+      else if (a === 'dm') { st.d = Math.max(1, st.d - 5); touched = true; draw(); }
+      else if (a === 'dp') { st.d = Math.min(300, st.d + 5); touched = true; draw(); }
+      else if (a === 'd') { st.d = v; touched = true; draw(); }
+      else if (a === 'pv') { if (st.p === v) delete st.p; else { st.p = v; if (!touched) st.d = v; } draw(); }
+      else if (a === 'pm') { st.p = Math.max(5, st.p - 5); if (!touched) st.d = st.p; draw(); }
+      else if (a === 'pp') { st.p = Math.min(300, st.p + 5); if (!touched) st.d = st.p; draw(); }
       else if (a === 'f') { if (st.f === v) delete st.f; else st.f = v; draw(); }
       else if (a === 'c') { if (st.c) delete st.c; else st.c = 1; draw(); }
       else if (a === 'save') {
         const s0 = $('#ps', el).value.slice(0, 5);
         if (!/^\d{2}:\d{2}$/.test(s0)) { toast('Indique l’heure de début'); return; }
         const e2 = { s: s0, d: st.d, t: st.t ? 1 : 0 };
-        if (st.f) e2.f = st.f; if (st.c) e2.c = 1;
+        if (st.f) e2.f = st.f; if (st.c) e2.c = 1; if (!st.t && st.p) e2.p = st.p;
         const arr = [...list];
         if (cur) arr[idx] = e2; else { if (arr.length >= 6) { toast('6 siestes maximum par jour'); return; } arr.push(e2); }
         arr.sort((x, y) => x.s.localeCompare(y.s));
@@ -2427,16 +2503,37 @@ function openNap(k, idx, preset) {
   });
 }
 function napStart() {
-  const d = new Date();
-  S.sleep.napOn = { k: todayKey(), s: `${pad(d.getHours())}:${pad(d.getMinutes())}`, at: Date.now() };
-  save(); refresh();
-  toast('Bonne sieste ! Pense à mettre une alarme dans 25 min');
+  let p = 20;
+  openSheet('', el => {
+    const draw = () => {
+      el.innerHTML = `<div class="grab"></div><h2>Combien de temps veux-tu dormir ?</h2>
+        <div class="mute small" style="margin-bottom:14px">10 à 20 min : le meilleur rapport efficacité / réveil en forme.</div>
+        <div class="durpick"><button data-q="m">−</button><b>${fmtDur(p)}</b><button data-q="p">+</button></div>
+        <div class="quick wrapq" style="margin-top:8px">${NAP_DUR.map(v => `<button data-q="v" data-v="${v}" class="${p === v ? 'on' : ''}">${v === 26 ? '26 min · NASA' : v + ' min'}</button>`).join('')}</div>
+        <div class="pace" style="margin-top:14px">⏰ Mets une alarme dans <b>${fmtDur(p + 5)}</b> (≈ 5 min pour t’endormir).</div>
+        <button class="btn" data-q="go" style="margin-top:14px">💤 Commencer la sieste</button>`;
+    };
+    draw();
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-q]'); if (!b) return;
+      const a = b.dataset.q;
+      if (a === 'm') { p = Math.max(5, p - 5); draw(); }
+      else if (a === 'p') { p = Math.min(300, p + 5); draw(); }
+      else if (a === 'v') { p = +b.dataset.v; draw(); }
+      else if (a === 'go') {
+        const d = new Date();
+        S.sleep.napOn = { k: todayKey(), s: `${pad(d.getHours())}:${pad(d.getMinutes())}`, at: Date.now(), p };
+        save(); closeSheet(); refresh();
+        toast(`Bonne sieste ! Alarme dans ${fmtDur(p + 5)}`);
+      }
+    });
+  });
 }
 function napStop() {
   const on = S.sleep.napOn; if (!on) return;
   const d = Math.min(300, Math.max(1, Math.round((Date.now() - on.at) / 60000)));
   S.sleep.napOn = null; save(); refresh();
-  openNap(on.k, undefined, { s: on.s, d });
+  openNap(on.k, undefined, { s: on.s, d, ...(on.p ? { p: on.p } : {}) });
 }
 function openNapTips() {
   const g = S.sleep.goals;
@@ -2451,7 +2548,283 @@ function openNapTips() {
       <div><b>⏰ Mets une alarme</b><span>Compte ~5 min pour t’endormir : pour 20 min de sieste, une alarme à 25 min.</span></div>
       <div><b>💤 S’assoupir souvent sans le vouloir</b><span>Des siestes de plus en plus longues et fréquentes peuvent signaler un manque de sommeil la nuit. Si ça persiste alors que tu dors assez, parles-en à un médecin.</span></div>
     </div>
+    ${srcList(['brooks', 'rosekind', 'sf', 'reyner', 'mograss', 'dutheil', 'carney'])}
     <button class="btn ghost" data-close="1" style="margin-top:14px">Fermer</button>`, el => el.addEventListener('click', e => { if (e.target.closest('[data-close]')) closeSheet(); }));
+}
+
+/* ---------- Caféine, fatigue et analyses ---------- */
+// Teneurs : EFSA 2015 (avis sur la sécurité de la caféine) et EUFIC ; pre-workout : dose standard de Gardiner et al. 2023
+const CAF = [
+  { k: 'esp', e: '☕', n: 'Expresso', s: '60 ml', mg: 80 },
+  { k: 'dbl', e: '☕', n: 'Double expresso', s: '2 × 60 ml', mg: 160 },
+  { k: 'fil', e: '☕', n: 'Café filtre / allongé', s: '200 ml', mg: 90 },
+  { k: 'lait', e: '🥛', n: 'Café au lait', s: 'bol, ≈ 1 café filtre', mg: 90 },
+  { k: 'cap', e: '☕', n: 'Cappuccino / crème', s: '≈ 1 expresso', mg: 80 },
+  { k: 'deca', e: '☕', n: 'Café décaféiné', s: '200 ml', mg: 4 },
+  { k: 'the', e: '🍵', n: 'Thé noir', s: '250 ml', mg: 55 },
+  { k: 'vert', e: '🍵', n: 'Thé vert', s: '250 ml', mg: 38 },
+  { k: 'cola', e: '🥤', n: 'Cola', s: 'canette', mg: 40 },
+  { k: 'ener', e: '⚡', n: 'Boisson énergisante', s: '250 ml', mg: 80 },
+  { k: 'enerl', e: '⚡', n: 'Énergisante grande', s: '500 ml', mg: 160 },
+  { k: 'pre', e: '💪', n: 'Pre-workout', s: 'dose standard', mg: 217 },
+  { k: 'choc', e: '🍫', n: 'Chocolat noir', s: '50 g', mg: 25 },
+  { k: 'autre', e: '✏️', n: 'Autre', s: 'mg au choix', mg: 100 }
+];
+const CAF_Q = [0.5, 1, 1.5, 2, 3];
+const ZL = [['😄', 'Pleine forme'], ['🙂', 'En forme'], ['😐', 'Moyen'], ['🥱', 'Fatigué'], ['😵', 'Épuisé']];
+const cafOf = d => S.sleep.caf[d] || [];
+const cafDef = k => CAF.find(c => c.k === k) || CAF[CAF.length - 1];
+const cafName = c => c.k === 'autre' ? (c.l || 'Caféine') : cafDef(c.k).n;
+// Heure du coucher qui suit la journée d (minutes depuis minuit de d) : réelle si la nuit est notée, sinon l'objectif
+const bedOf = d => { const n = S.sleep.log[addDays(d, 1)]; return bedAxis(n ? n.bed : S.sleep.goals.bed) + 720; };
+// Délai minimal avant le coucher (Gardiner et al. 2023) : café ~107 mg → 8,8 h ; pre-workout ~217 mg → 13,2 h ;
+// pas de délai trouvé pour une tasse de thé noir (petites doses ≤ 60 mg)
+const cafCut = mg => mg <= 60 ? 0 : mg > 150 ? 792 : 528;
+const HALF = 300;   // demi-vie moyenne retenue : 5 h (de 2 à 10 h selon les personnes)
+function cafCheck(c, d) {
+  const gap = bedOf(d) - tMin(c.t), cut = cafCut(c.mg);
+  return { gap, cut, late: cut > 0 && gap < cut, left: gap <= 0 ? c.mg : c.mg * Math.pow(0.5, gap / HALF) };
+}
+function cafDay(d) {
+  const list = cafOf(d), ch = list.map(c => cafCheck(c, d));
+  const tot = list.reduce((a, c) => a + c.mg, 0);
+  return { list, ch, tot, n: list.length, late: ch.filter(x => x.late).length, left: ch.reduce((a, x) => a + x.left, 0),
+    last: list.length ? list[list.length - 1].t : null, over: tot > 400, big: list.some(c => c.mg > 200), lim: bedOf(d) - 528 };
+}
+
+// Sources citées dans l'appli
+const SRC = {
+  gardiner: ['Gardiner et al. (2023). The effect of caffeine on subsequent sleep: a systematic review and meta-analysis. Sleep Medicine Reviews, 69.', 'https://doi.org/10.1016/j.smrv.2023.101764'],
+  drake: ['Drake et al. (2013). Caffeine effects on sleep taken 0, 3, or 6 hours before going to bed. J. Clin. Sleep Med., 9(11).', 'https://doi.org/10.5664/jcsm.3170'],
+  efsa: ['EFSA (2015). Scientific opinion on the safety of caffeine. EFSA Journal, 13(5):4102.', 'https://doi.org/10.2903/j.efsa.2015.4102'],
+  mograss: ['The effects of napping on night-time sleep in healthy young adults (2022). Journal of Sleep Research, 31(5):e13578.', 'https://pubmed.ncbi.nlm.nih.gov/35253300/'],
+  dutheil: ['Dutheil et al. (2021). Effects of a short daytime nap on the cognitive performance: a systematic review and meta-analysis. IJERPH, 18(19).', 'https://doi.org/10.3390/ijerph181910212'],
+  brooks: ['Brooks & Lack (2006). A brief afternoon nap following nocturnal sleep restriction: which nap duration is most recuperative? Sleep, 29(6).', 'https://doi.org/10.1093/sleep/29.6.831'],
+  mantua: ['Mantua & Spencer (2017). Exploring the nap paradox: are mid-day sleep bouts a friend or foe? Sleep Medicine, 37.', 'https://doi.org/10.1016/j.sleep.2017.01.019'],
+  rosekind: ['Rosekind et al. (1995). Alertness management: strategic naps in operational settings. Journal of Sleep Research, 4(S2).', 'https://pubmed.ncbi.nlm.nih.gov/?term=Rosekind+Alertness+management+strategic+naps+in+operational+settings'],
+  reyner: ['Reyner & Horne (1997). Suppression of sleepiness in drivers: combination of caffeine with a short nap. Psychophysiology, 34(6).', 'https://doi.org/10.1111/j.1469-8986.1997.tb02148.x'],
+  sf: ['Sleep Foundation. Does napping impact sleep at night?', 'https://www.sleepfoundation.org/how-sleep-works/does-napping-impact-sleep-at-night'],
+  carney: ['Carney et al. (2012). The Consensus Sleep Diary: standardizing prospective sleep self-monitoring. Sleep, 35(2).', 'https://doi.org/10.5665/sleep.1642']
+};
+const srcList = keys => `<details class="srcs"><summary>Sources (${keys.length})</summary><ol>${keys.map(k => `<li>${esc(SRC[k][0])} <a href="${SRC[k][1]}" target="_blank" rel="noopener">Lien</a></li>`).join('')}</ol></details>`;
+
+/* Carte « Ma journée » : fatigue + caféine du jour affiché */
+function sleepDayCard(k) {
+  const isT = k === todayKey(), z = S.sleep.day[k] && S.sleep.day[k].z, cd = cafDay(k);
+  let html = `<div class="section sec-row"><span>Ma journée · ${isT ? 'aujourd’hui' : fmtShort(k)}</span><button data-act="cafTips">Caféine et sommeil</button></div><div class="ncard">
+    <span class="l" style="margin-bottom:8px">🔋 Ta fatigue dans la journée</span>
+    <div class="rate zrate">${ZL.map(([e, l], i) => `<button data-act="dayZ" data-k="${k}" data-v="${i + 1}" class="${z === i + 1 ? 'on' : ''}"><i>${e}</i>${l}</button>`).join('')}</div>
+    <div class="cafhead"><span class="l" style="margin:0">☕ Caféine</span><b class="${cd.over ? 'warn' : ''}">${cd.tot} mg<small> / 400 mg</small></b></div>
+    <div class="cafbar"><i style="width:${Math.min(100, cd.tot / 4)}%;background:${cd.over ? '#FB923C' : cd.tot > 300 ? '#FBBF24' : '#A5B4FC'}"></i></div>`;
+  if (cd.n) html += cd.list.map((c, i) => { const x = cd.ch[i], dd = cafDef(c.k);
+    return `<button class="cafitem" data-act="cafEdit" data-k="${k}" data-i="${i}"><i style="background:${x.late ? '#FB923C' : '#818CF8'}"></i>
+      <div><b>${dd.e} ${esc(cafName(c))}${c.q && c.q !== 1 ? ` ×${fmtNum(c.q)}` : ''}</b><span>${fmtTime(c.t)} · ${c.mg} mg${x.late ? ` · <em>trop tard : ${fmtGap(x.gap)} avant le coucher (il faudrait ${fmtGap(x.cut)})</em>` : ''}</span></div></button>`; }).join('');
+  html += `<div class="pace" style="margin:10px 2px 0">Heure limite pour un café (${fmtTime(tStr(bedOf(k)))} − 8 h 48) : <b>${fmtTime(tStr(cd.lim))}</b>${cd.n ? ` · ≈ <b>${Math.round(cd.left)} mg</b> encore actifs au coucher` : ''}</div>`;
+  html += `<div class="cafquick">${['esp', 'fil', 'lait', 'the', 'ener'].map(id => { const c = cafDef(id); return `<button data-act="cafQuick" data-k="${k}" data-v="${id}">${c.e} ${c.n === 'Café filtre / allongé' ? 'Café filtre' : c.n === 'Boisson énergisante' ? 'Énergisante' : c.n}</button>`; }).join('')}<button data-act="cafAdd" data-k="${k}">+ Autre</button></div>`;
+  return html + `</div>`;
+}
+
+function openCaf(k, idx, quick) {
+  const list = cafOf(k), cur = idx !== undefined ? list[idx] : null;
+  const now = new Date(), nowT = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const st = cur ? { k: cur.k, t: cur.t, q: cur.q || 1, mg1: cur.k === 'autre' ? cur.mg / (cur.q || 1) : cafDef(cur.k).mg, l: cur.l || '' }
+    : { k: quick || 'esp', t: k === todayKey() ? nowT : '09:00', q: 1, mg1: cafDef(quick || 'esp').mg, l: '' };
+  openSheet('', el => {
+    const draw = () => {
+      const top = el.scrollTop, mg = Math.round(st.mg1 * st.q), x = cafCheck({ t: st.t, mg }, k);
+      const others = list.filter((_, i) => i !== idx).reduce((a, c) => a + c.mg, 0), tot = others + mg;
+      el.innerHTML = `<div class="grab"></div><h2>${cur ? 'Modifier la prise' : 'Ajouter de la caféine'}</h2>
+        <div class="mute small" style="margin-bottom:14px">${fmtDay(k)}</div>
+        <div class="cafgrid">${CAF.map(c => `<button data-c="k" data-v="${c.k}" class="${st.k === c.k ? 'on' : ''}"><i>${c.e}</i><b>${c.n}</b><span>${c.s} · ${c.k === 'autre' ? '?' : c.mg} mg</span></button>`).join('')}</div>
+        ${st.k === 'autre' ? `<div class="goalgrid" style="margin-top:12px"><div><label class="l" for="cl">Nom</label><input class="inp" id="cl" maxlength="30" placeholder="Ex. Monster, comprimé…" value="${esc(st.l)}"></div>
+          <div><label class="l" for="cm">Caféine (mg)</label><input class="inp" id="cm" type="number" inputmode="numeric" min="1" max="1000" value="${Math.round(st.mg1)}"></div></div>` : ''}
+        <div class="field" style="margin-top:14px"><span class="l">Quantité</span><div class="seg">${CAF_Q.map(q => `<button data-c="q" data-v="${q}" class="${st.q === q ? 'on' : ''}">${q === 0.5 ? '½' : q === 1.5 ? '1½' : '×' + q}</button>`).join('')}</div></div>
+        <div class="goalgrid"><div><label class="l" for="ct">Heure</label><input class="inp big" id="ct" type="time" value="${st.t}"></div>
+          <div><span class="l">Caféine</span><div class="inp big cafmg">${mg} mg</div></div></div>
+        <div class="napverdict" style="margin-top:12px">
+          <div><i style="background:${x.late ? '#FB923C' : '#818CF8'}"></i><b>${x.cut === 0 ? 'Petite dose' : x.late ? 'Trop proche du coucher' : 'Assez tôt'}</b>
+            <span>${x.cut === 0 ? 'Moins de 60 mg : la méta-analyse de Gardiner et al. (2023) n’a pas trouvé d’heure limite pour une tasse de thé noir.' : `${fmtGap(Math.max(0, x.gap))} avant ton coucher (${fmtTime(tStr(bedOf(k)))}). Pour ${mg > 150 ? 'une forte dose (type pre-workout), il faut au moins 13 h 12' : 'un café, il faut au moins 8 h 48'} pour ne pas perdre de sommeil (Gardiner et al., 2023).`} ≈ ${Math.round(x.left)} mg seront encore actifs au coucher (demi-vie moyenne de 5 h).</span></div>
+          <div><i style="background:${tot > 400 || mg > 200 ? '#FB923C' : '#818CF8'}"></i><b>${tot} mg sur la journée</b>
+            <span>${mg > 200 ? 'Plus de 200 mg d’un coup : au-delà de la dose unique jugée sans risque par l’EFSA. ' : ''}${tot > 400 ? 'Au-delà des 400 mg par jour jugés sans risque pour un adulte (EFSA, 2015).' : 'Sous les 400 mg par jour jugés sans risque pour un adulte (EFSA, 2015).'}</span></div></div>
+        <button class="btn" data-c="save" style="margin-top:14px">Enregistrer</button>
+        ${cur ? '<button class="btn danger" data-c="delete">Effacer cette prise</button>' : ''}`;
+      $('#ct', el).addEventListener('change', e => { if (e.target.value) { st.t = e.target.value.slice(0, 5); draw(); } });
+      if ($('#cm', el)) $('#cm', el).addEventListener('change', e => { const v = parseFloat(e.target.value); if (v > 0 && v <= 1000) st.mg1 = v; draw(); });
+      if ($('#cl', el)) $('#cl', el).addEventListener('input', e => { st.l = e.target.value; });
+      el.scrollTop = top;
+    };
+    draw();
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-c]'); if (!b) return;
+      const a = b.dataset.c;
+      if (a === 'k') { st.k = b.dataset.v; if (st.k !== 'autre') st.mg1 = cafDef(st.k).mg; draw(); }
+      else if (a === 'q') { st.q = +b.dataset.v; draw(); }
+      else if (a === 'save') {
+        const t = $('#ct', el).value.slice(0, 5);
+        if (!/^\d{2}:\d{2}$/.test(t)) { toast('Indique l’heure'); return; }
+        const e2 = { t, k: st.k, mg: Math.round(st.mg1 * st.q) };
+        if (st.q !== 1) e2.q = st.q;
+        if (st.k === 'autre' && st.l.trim()) e2.l = st.l.trim().slice(0, 30);
+        const arr = [...list];
+        if (cur) arr[idx] = e2; else { if (arr.length >= 20) { toast('20 prises maximum par jour'); return; } arr.push(e2); }
+        arr.sort((x, y) => x.t.localeCompare(y.t));
+        S.sleep.caf[k] = arr; save(); closeSheet(); refresh();
+        const x = cafCheck(e2, k);
+        toast(`${cafName(e2)} · ${e2.mg} mg${x.late ? ' · trop proche du coucher' : ''}`);
+      } else if (a === 'delete') {
+        const old = [...list], arr = list.filter((_, i) => i !== idx);
+        if (arr.length) S.sleep.caf[k] = arr; else delete S.sleep.caf[k];
+        save(); closeSheet(); refresh();
+        toast('Prise effacée', 'Annuler', () => { S.sleep.caf[k] = old; save(); refresh(); });
+      }
+    });
+  });
+}
+function openCafTips() {
+  openSheet(`<div class="grab"></div><h2>Caféine et sommeil</h2>
+    <div class="mute small" style="margin-bottom:14px">Ce que disent les études</div>
+    <div class="tips">
+      <div><b>⏳ 45 min de sommeil en moins</b><span>Dans la méta-analyse de Gardiner et al. (2023, 24 études), la caféine réduisait le sommeil total de 45 min et l’efficacité du sommeil de 7 %, rallongeait l’endormissement de 9 min et réduisait le sommeil profond.</span></div>
+      <div><b>🕗 Les heures limites</b><span>Pour ne pas perdre de sommeil : un café (~107 mg) au moins 8 h 48 avant le coucher, un pre-workout (~217 mg) au moins 13 h 12 avant. Aucune heure limite n’a été trouvée pour une tasse de thé noir (Gardiner et al., 2023).</span></div>
+      <div><b>🤫 L’effet passe inaperçu</b><span>400 mg pris 6 h avant le coucher réduisaient le sommeil de plus d’une heure, mais les participants ne s’en rendaient pas compte dans leur agenda du sommeil (Drake et al., 2013). D’où l’intérêt de suivre tes prises plutôt que ton ressenti.</span></div>
+      <div><b>🧪 Demi-vie de 2 à 10 h</b><span>La moitié de la caféine est éliminée en 5 h en moyenne, mais cela varie de 2 à 10 h selon les personnes. L’appli calcule avec 5 h : c’est une estimation.</span></div>
+      <div><b>📏 400 mg par jour</b><span>L’EFSA juge sans risque jusqu’à 400 mg par jour pour un adulte en bonne santé, et 200 mg en une seule prise. Expresso ≈ 80 mg, café filtre ≈ 90 mg, thé ≈ 50 mg, canette de cola ≈ 40 mg, boisson énergisante ≈ 80 mg (EFSA, 2015).</span></div>
+      <div><b>🔁 Le cercle vicieux</b><span>On boit souvent du café parce qu’on a mal dormi, et ce café peut à son tour gêner la nuit suivante (Gardiner et al., 2023). L’analyse de la semaine compare tes jours fatigués et ta caféine pour le repérer.</span></div>
+    </div>
+    ${srcList(['gardiner', 'drake', 'efsa'])}
+    <button class="btn ghost" data-close="1" style="margin-top:14px">Fermer</button>`, el => el.addEventListener('click', e => { if (e.target.closest('[data-close]')) closeSheet(); }));
+}
+
+/* Analyse de la nuit : ce qui, la veille, a pu jouer (fait chaque jour, car la caféine et la sieste agissent sur la nuit qui suit) */
+function nightAnalysis(k) {
+  const prev = addDays(k, -1), night = S.sleep.log[k], cd = cafDay(prev), naps = napsOf(prev);
+  if (!night && !cd.n && !naps.length) return '';
+  const items = [];
+  // Caféine de la veille
+  if (cd.n) {
+    const lateC = cd.list.filter((c, i) => cd.ch[i].late);
+    const lvl = lateC.length ? 0 : cd.over ? 1 : 2;
+    items.push([lvl, '☕ Caféine de la veille', `${cd.tot} mg en ${cd.n} prise${cd.n > 1 ? 's' : ''}, la dernière à ${fmtTime(cd.last)}. ` +
+      (lateC.length ? `${lateC.length > 1 ? `${lateC.length} prises étaient` : `${esc(cafName(lateC[0]))} de ${fmtTime(lateC[0].t)} était`} trop proche${lateC.length > 1 ? 's' : ''} du coucher : la méta-analyse de Gardiner et al. (2023) associe la caféine à ~45 min de sommeil en moins et 9 min d’endormissement en plus. ≈ ${Math.round(cd.left)} mg étaient encore actifs au coucher.`
+        : `Tout a été pris assez tôt${cd.over ? ', mais la journée dépasse les 400 mg conseillés (EFSA)' : ''} : ≈ ${Math.round(cd.left)} mg encore actifs au coucher.`), lateC.length ? ['gardiner', 'drake'] : cd.over ? ['efsa'] : []]);
+  } else items.push([2, '☕ Caféine de la veille', 'Aucune prise notée.', []]);
+  // Siestes de la veille
+  if (naps.length) {
+    const bad = naps.map(napCheck).filter(c => c.bad), late = naps.map(napCheck).filter(c => c.time[0] === 0), tot = naps.reduce((a, n) => a + n.d, 0);
+    items.push([bad.length ? 0 : 2, '💤 Sieste de la veille', `${fmtDur(tot)} de sieste. ` + (late.length ? 'Sieste tardive : elle réduit la pression de sommeil le soir ; chez de jeunes adultes, les siestes tardives étaient associées à un endormissement plus long et à plus de réveils (étude de 2022, J. Sleep Res.).'
+      : bad.length ? 'Sieste longue (plus de 30 min) : moins de besoin de sommeil le soir et risque de réveil groggy (Brooks & Lack, 2006).' : 'Courte et assez tôt : d’après les études, ce type de sieste ne gêne pas la nuit.'), late.length ? ['mograss', 'sf'] : bad.length ? ['brooks', 'sf'] : ['sf']]);
+  }
+  // Fatigue de la veille
+  const z = S.sleep.day[prev] && S.sleep.day[prev].z;
+  if (z) items.push([z >= 4 ? 1 : 2, '🔋 Fatigue de la veille', `${ZL[z - 1][1]}.${z >= 4 && cd.n ? ' Les jours de fatigue, on boit souvent plus de café, ce qui peut gêner la nuit suivante (Gardiner et al., 2023).' : ''}`, z >= 4 && cd.n ? ['gardiner'] : []]);
+  // Bilan de la nuit
+  let verdict = '';
+  if (night) {
+    const v = nightNote(night), d = nightDur(night), g = S.sleep.goals, bad = items.some(x => x[0] === 0);
+    const poor = (v && v <= 6) || d < g.dur - g.tol || (night.l !== undefined && night.l >= 2) || (night.a !== undefined && night.a >= 2);
+    verdict = bad && poor ? `<b>Ta nuit a pu être gênée</b> par ce qui est en orange ci-dessous.`
+      : bad && !poor ? `<b>Malgré ce qui est en orange, ta nuit a l’air correcte.</b> Attention : dans l’étude de Drake et al. (2013), la caféine prise 6 h avant le coucher faisait perdre plus d’une heure de sommeil sans que les participants le remarquent.`
+      : !bad && poor ? `<b>Nuit moins bonne</b>, mais ni la caféine ni la sieste de la veille ne l’expliquent. Autres pistes : stress, écran, sport tardif, repas, bruit…`
+      : `<b>Rien à signaler</b> : la veille n’a rien qui gêne le sommeil d’après les études.`;
+    verdict = `<div class="anres"><span>${fmtDur(d)}${v ? ` · ${v}/10` : ''}${night.l !== undefined ? ` · endormi en ${SL[night.l]}` : ''}${night.a !== undefined ? ` · ${SA[night.a] === 'Aucun' ? 'aucun réveil' : SA[night.a] + ' réveil' + (night.a > 1 ? 's' : '')}` : ''}</span>${verdict}</div>`;
+  } else verdict = `<div class="anres"><span>Renseigne ta nuit pour voir si la veille a pu jouer.</span></div>`;
+  const keys = [...new Set(items.flatMap(x => x[3]))];
+  return `<div class="section">Analyse de la nuit</div><div class="ncard">${verdict}
+    ${items.map(([l, t, x]) => `<div class="anitem"><i style="background:${lvlColor(l)}"></i><b>${t}</b><span>${x}</span></div>`).join('')}
+    ${keys.length ? srcList(keys) : ''}</div>`;
+}
+
+/* Bilan de la semaine : comparaisons sur 7 jours (28 s'il n'y a pas assez de cas), car une seule nuit ne suffit pas pour conclure */
+function weekAnalysis(k) {
+  const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+  const daysN = n => { const a = []; for (let i = n; i >= 1; i--) a.push(addDays(k, -i)); return a; };   // journées dont la nuit suivante est ≤ k
+  const after = d => S.sleep.log[addDays(d, 1)];
+  const anyData = daysN(28).some(d => cafOf(d).length || napsOf(d).length || S.sleep.day[d]);
+  if (!anyData) return '';
+  // Compare les nuits qui suivent deux groupes de journées
+  const cmp = (days, isA, label, A, B) => {
+    const a = days.filter(d => after(d) && isA(d)), b = days.filter(d => after(d) && !isA(d));
+    if (a.length < 2 || b.length < 2) return null;
+    const m = (arr, f) => { const v = arr.map(d => f(after(d))).filter(x => x !== null && x !== undefined); return v.length ? avg(v) : null; };
+    const nA = m(a, nightNote), nB = m(b, nightNote), dA = m(a, nightDur), dB = m(b, nightDur), lA = m(a, n => n.l), lB = m(b, n => n.l);
+    const parts = []; let worst = 2;
+    if (nA !== null && nB !== null) { const x = nA - nB; parts.push(`note ${fmtNote(nA)} vs ${fmtNote(nB)}/10`); if (x <= -1) worst = 0; else if (x <= -0.5) worst = Math.min(worst, 1); }
+    if (dA !== null && dB !== null) { const x = dA - dB; parts.push(`${fmtDur(dA)} vs ${fmtDur(dB)} de sommeil`); if (x <= -30) worst = 0; else if (x <= -15) worst = Math.min(worst, 1); }
+    if (lA !== null && lB !== null && lA - lB >= 0.5) { parts.push('endormissement plus long'); worst = Math.min(worst, 1); }
+    return { label, A: `${A} (${a.length})`, B: `${B} (${b.length})`, parts, lvl: worst,
+      eff: worst === 0 ? 'effet net sur tes nuits' : worst === 1 ? 'effet léger' : 'pas d’effet visible sur tes nuits' };
+  };
+  // Chaque facteur est comparé sur 7 jours, ou sur 4 semaines si la semaine n'a pas assez de cas
+  const factor = (isA, label, A, B, src, pool) => {
+    for (const n of [7, 28]) {
+      const days = pool ? daysN(n).filter(pool) : daysN(n);
+      if (!days.some(isA)) continue;
+      const r = cmp(days, isA, label, A, B);
+      if (r) return [{ ...r, n }, src];
+    }
+    return null;
+  };
+  const napDay = d => napsOf(d).length > 0;
+  const w = { rows: [
+    factor(d => cafDay(d).late > 0, '☕ Caféine trop tardive', 'nuits après', 'nuits sans', ['gardiner', 'drake']),
+    factor(d => cafDay(d).tot >= 300, '☕ Journée à 300 mg ou plus', 'nuits après', 'nuits après moins', ['gardiner', 'efsa']),
+    factor(napDay, '💤 Sieste', 'nuits après une sieste', 'sans sieste', ['mograss', 'sf']),
+    factor(d => napsOf(d).some(x => napCheck(x).bad), '💤 Sieste longue ou tardive', 'après sieste longue/tardive', 'après sieste bien faite', ['mograss', 'brooks'], napDay)
+  ].filter(Boolean) };
+  const days7 = daysN(7).concat([k]);
+  // Résumé chiffré de la semaine
+  const cafD = days7.map(cafDay), withCaf = cafD.filter(c => c.n);
+  const napsW = days7.flatMap(napsOf), lateTot = cafD.reduce((a, c) => a + c.late, 0), overDays = cafD.filter(c => c.over).length;
+  let html = `<div class="section sec-row"><span>Bilan des 7 derniers jours</span><span class="mute small" style="text-transform:none;letter-spacing:0;font-weight:600">du ${fmtShort(days7[0])} au ${fmtShort(k)}</span></div><div class="ncard">
+    <div class="wstats" style="grid-template-columns:1fr 1fr;margin-top:0">
+      <div><b>${withCaf.length ? Math.round(avg(cafD.map(c => c.tot))) + ' mg' : '—'}</b><span>caféine par jour en moyenne${overDays ? ` · ${overDays} jour${overDays > 1 ? 's' : ''} > 400 mg` : ''}</span></div>
+      <div><b>${lateTot}</b><span>prise${lateTot > 1 ? 's' : ''} trop proche${lateTot > 1 ? 's' : ''} du coucher</span></div>
+      <div><b>${napsW.length}</b><span>sieste${napsW.length > 1 ? 's' : ''}${napsW.length ? ` · ${fmtDur(avg(napsW.map(x => x.d)))} en moyenne` : ''}</span></div>
+      <div><b>${(() => { const z = days7.map(d => S.sleep.day[d] && S.sleep.day[d].z).filter(Boolean); return z.length ? ZL[Math.round(avg(z)) - 1][0] + ' ' + ZL[Math.round(avg(z)) - 1][1] : '—'; })()}</b><span>fatigue moyenne dans la journée</span></div></div>`;
+  html += `<div class="subhead" style="margin-top:6px">Caféine par jour</div>` + cafChart(days7, k);
+  // Comparaisons
+  html += `<div class="subhead" style="margin-top:14px">Ce qui a joué sur tes nuits</div>`;
+  if (w.rows.length) html += w.rows.map(([r]) => `<div class="anrow"><i style="background:${lvlColor(r.lvl)}"></i><div><b>${r.label} : ${r.eff}</b><span>${r.n === 28 ? 'Sur 4 semaines (pas assez de cas sur 7 jours) · ' : ''}${r.A} vs ${r.B} · ${r.parts.join(' · ')}</span></div></div>`).join('');
+  else html += `<div class="mute small">Pas encore assez de données : il faut au moins 2 nuits avec et 2 nuits sans le même facteur (caféine tardive, sieste…). Continue à noter tes nuits, ta caféine et tes siestes.</div>`;
+  // Fatigue : effet de la sieste et lien avec la caféine
+  const fat = [];
+  const days28 = daysN(28).concat([k]);
+  const fN = days28.flatMap(d => napsOf(d)).filter(x => x.f);
+  if (fN.length >= 2) {
+    const sh = fN.filter(x => x.d <= 30), lo = fN.filter(x => x.d > 30);
+    const pct = arr => arr.length ? `${Math.round(100 * arr.filter(x => x.f === 3).length / arr.length)} % en forme, ${Math.round(100 * arr.filter(x => x.f === 1).length / arr.length)} % groggy` : '';
+    fat.push(['💤 Réveil après la sieste', sh.length && lo.length ? `≤ 30 min : ${pct(sh)} · > 30 min : ${pct(lo)}` : pct(fN), 'brooks']);
+  }
+  const zDays = days28.filter(d => S.sleep.day[d]);
+  const zN = zDays.filter(d => napsOf(d).length), zO = zDays.filter(d => !napsOf(d).length);
+  if (zN.length >= 2 && zO.length >= 2) fat.push(['🔋 Fatigue les jours de sieste', `${fmtNote(avg(zN.map(d => S.sleep.day[d].z)))} vs ${fmtNote(avg(zO.map(d => S.sleep.day[d].z)))} sans sieste (1 = pleine forme, 5 = épuisé). On fait souvent la sieste parce qu’on est fatigué : à lire avec prudence.`, 'dutheil']);
+  const zT = zDays.filter(d => S.sleep.day[d].z >= 4), zF = zDays.filter(d => S.sleep.day[d].z <= 2);
+  if (zT.length >= 2 && zF.length >= 2) {
+    const cT = avg(zT.map(d => cafDay(d).tot)), cF = avg(zF.map(d => cafDay(d).tot));
+    fat.push(['☕ Caféine selon ta fatigue', `${Math.round(cT)} mg les jours fatigués vs ${Math.round(cF)} mg les jours en forme.${cT - cF >= 80 ? ' Tu compenses la fatigue par la caféine : attention au cercle vicieux caféine → nuit écourtée → fatigue (Gardiner et al., 2023).' : ''}`, 'gardiner']);
+  }
+  const rN = days28.filter(d => napsOf(d).length && after(d) && after(d).r), rO = days28.filter(d => !napsOf(d).length && after(d) && after(d).r);
+  if (rN.length >= 2 && rO.length >= 2) fat.push(['🌅 Repos au réveil le lendemain', `${fmtNote(avg(rN.map(d => after(d).r)))}/5 après une sieste vs ${fmtNote(avg(rO.map(d => after(d).r)))}/5 sans`, 'mograss']);
+  if (fat.length) html += `<div class="subhead" style="margin-top:14px">Fatigue <span style="font-weight:500">(sur 4 semaines)</span></div>` + fat.map(([t, x]) => `<div class="naprow" style="grid-template-columns:1fr"><b>${t}</b><span>${x}</span></div>`).join('');
+  if (napsW.length >= 3) html += `<div class="napwarn">💤 ${napsW.length} siestes en 7 jours. Chez de jeunes adultes, faire la sieste 3 fois ou plus en 8 jours était associé à un sommeil de nuit plus fragmenté (étude de 2022, J. Sleep Res.).</div>`;
+  const keys = [...new Set(['gardiner', 'efsa', ...w.rows.flatMap(x => x[1]), ...fat.map(x => x[2]), ...(napsW.length >= 3 ? ['mograss'] : [])])];
+  html += `<div class="mute small" style="margin-top:12px;line-height:1.45">Ce sont des comparaisons sur tes propres données : elles montrent des liens, pas des causes. Elles deviennent fiables avec plusieurs semaines de suivi.</div>${srcList(keys)}</div>`;
+  return html;
+}
+function cafChart(days, k) {
+  const W = 340, H = 110, P = 4, B = 16, T = 10, n = days.length, bw = (W - 2 * P) / n;
+  const max = Math.max(450, ...days.map(d => cafDay(d).tot));
+  const y = v => T + (H - T - B) * (1 - v / max);
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart"><line x1="${P}" x2="${W - P}" y1="${y(400).toFixed(1)}" y2="${y(400).toFixed(1)}" stroke="#8B90A0" stroke-dasharray="4 4"/>
+    <text x="${P + 2}" y="${(y(400) - 3).toFixed(1)}" font-size="9" fill="#5A6070">400 mg (EFSA)</text>`;
+  days.forEach((d, i) => {
+    const bx = P + i * bw + bw * 0.2, w = bw * 0.6, cd = cafDay(d);
+    let base = H - B;
+    cd.list.forEach((c, j) => { const hh = (H - T - B) * c.mg / max; s += `<rect x="${bx.toFixed(1)}" y="${(base - hh).toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(1.5, hh - 1).toFixed(1)}" rx="3" fill="${cd.ch[j].late ? '#FB923C' : '#A5B4FC'}"/>`; base -= hh; });
+    if (cd.tot) s += `<text x="${(bx + w / 2).toFixed(1)}" y="${(base - 3).toFixed(1)}" text-anchor="middle" font-size="9" fill="#8B90A0">${cd.tot}</text>`;
+    s += `<text x="${(bx + w / 2).toFixed(1)}" y="${H - 3}" text-anchor="middle" font-size="10" fill="${d === k ? '#F2F3F5' : '#5A6070'}" font-weight="700">${LETTER[parse(d).getDay()]}</text>`;
+  });
+  return s + `</svg><div class="legend" style="margin-top:4px"><span><i style="background:#A5B4FC"></i>Prise assez tôt</span><span><i style="background:#FB923C"></i>Trop proche du coucher</span></div>`;
 }
 
 // Statistiques des siestes sur la période affichée
@@ -2477,6 +2850,11 @@ function napStats(days, k, range) {
   const feel = (arr) => { const f = arr.filter(x => x.n.f); return f.length >= 2 ? { n: f.length, g: f.filter(x => x.n.f === 1).length, top: f.filter(x => x.n.f === 3).length } : null; };
   const fs = feel(all.filter(x => x.n.d <= 30)), fl = feel(all.filter(x => x.n.d > 30));
   if (fs && fl) lines.push(['Groggy au réveil', `${fs.g}/${fs.n} après ≤ 30 min`, `${fl.g}/${fl.n} après > 30 min`]);
+  const planned = all.filter(x => x.n.p && !x.n.t);
+  if (planned.length >= 2) {
+    const okN = planned.filter(x => napGap(x.n).ok).length, over = planned.filter(x => napGap(x.n).x > 5);
+    lines.push(['Durée prévue', `${okN}/${planned.length} respectées (à 5 min près)`, over.length ? `${over.length} dépassée${over.length > 1 ? 's' : ''}, de ${fmtDur(avg(over.map(x => napGap(x.n).x)))} en moyenne` : 'jamais dépassée']);
+  }
   const fc = feel(all.filter(x => x.n.c)), fn = feel(all.filter(x => !x.n.c));
   if (fc && fn) lines.push(['En forme au réveil', `${fc.top}/${fc.n} avec café`, `${fn.top}/${fn.n} sans café`]);
   // Effet sur la nuit suivante (nuit qui se termine le lendemain)
@@ -3263,7 +3641,7 @@ function openSettings() {
       <button class="setrow" data-s="export">${I.down}<span>Exporter une sauvegarde (.json)</span></button>
       <button class="setrow" data-s="import">${I.up}<span>Importer une sauvegarde ou un suivi de diète</span></button>
       <button class="setrow red" data-s="reset">${I.trash}<span>Tout effacer</span></button>
-      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.15</div>`;
+      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.18</div>`;
     };
     w._refresh = draw; draw();
     el.addEventListener('click', async e => {
@@ -3442,6 +3820,11 @@ app.addEventListener('click', e => {
     case 'napStop': napStop(); break;
     case 'napCancel': S.sleep.napOn = null; save(); refresh(); break;
     case 'napTips': openNapTips(); break;
+    case 'cafTips': openCafTips(); break;
+    case 'cafAdd': openCaf(el.dataset.k); break;
+    case 'cafQuick': openCaf(el.dataset.k, undefined, el.dataset.v); break;
+    case 'cafEdit': openCaf(el.dataset.k, +el.dataset.i); break;
+    case 'dayZ': { const dk = el.dataset.k, v = +el.dataset.v; if (S.sleep.day[dk] && S.sleep.day[dk].z === v) delete S.sleep.day[dk]; else S.sleep.day[dk] = { z: v }; save(); renderMain(); break; }
     case 'editEntry': openEntry(dietView, el.dataset.id); break;
     case 'dietPrev': dietView = addDays(dietView, -1); dietMonth = dietView.slice(0, 7); renderMain(); break;
     case 'dietNext': if (dietView < todayKey()) { dietView = addDays(dietView, 1); dietMonth = dietView.slice(0, 7); renderMain(); } break;
