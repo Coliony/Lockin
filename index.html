@@ -439,6 +439,26 @@ body.task-dragging{user-select:none;-webkit-user-select:none}
 .strend.up{color:#A5B4FC}.strend.down{color:#FB923C}
 .sqsplit{display:grid;grid-template-columns:1fr auto 1fr auto;gap:8px;align-items:center;background:var(--card2);border-radius:12px;padding:9px 12px;margin-bottom:6px;font-size:12.5px;color:var(--mute)}
 .sqsplit b{font-size:16px;font-weight:800;margin-right:4px}
+.napitem{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card2);border-radius:14px;padding:11px 12px;margin-bottom:8px}
+.napitem>i{flex:none;width:6px;align-self:stretch;border-radius:3px}
+.napitem b{display:block;font-size:14.5px}
+.napitem span{display:block;font-size:12px;color:var(--mute);margin-top:2px;line-height:1.35}
+.napon{display:flex;align-items:center;gap:12px}
+.napon b{display:block;font-size:15px}
+.napon span{display:block;font-size:12.5px;color:var(--mute);margin-top:3px;line-height:1.35}
+.napend{display:flex;align-items:center;color:var(--mute)}
+.napverdict{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.napverdict div{display:grid;grid-template-columns:8px 1fr;column-gap:10px;background:var(--card);border-radius:12px;padding:10px 12px}
+.napverdict i{grid-row:span 2;border-radius:3px}
+.napverdict b{font-size:14px}
+.napverdict span{font-size:12.5px;color:var(--mute);line-height:1.4;margin-top:2px}
+.naprow{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;background:var(--card2);border-radius:12px;padding:9px 12px;margin-bottom:6px;font-size:12.5px;color:var(--mute)}
+.naprow b{grid-column:1/-1;color:var(--text);font-size:13.5px}
+.napwarn{margin-top:12px;background:color-mix(in srgb,#FB923C 14%,var(--card));border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.4}
+.tips{display:flex;flex-direction:column;gap:8px}
+.tips div{background:var(--card);border-radius:12px;padding:11px 13px}
+.tips b{display:block;font-size:14.5px}
+.tips span{display:block;font-size:13px;color:var(--mute);margin-top:4px;line-height:1.45}
 .durpick{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:14px;padding:6px}
 .durpick button{width:48px;height:44px;border-radius:10px;background:var(--card2);font-size:22px;font-weight:700}
 .durpick b{font-size:24px;font-weight:800}
@@ -586,8 +606,20 @@ function load() {
 // Sommeil : une nuit est rangée à la date du réveil ({ bed: 'HH:MM', wake: 'HH:MM' })
 function sanitizeSleep(d) {
   const isT = v => typeof v === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
-  const out = { goals: { dur: 480, bed: '23:00', wake: '07:00', tol: 30 }, goalsSet: false, log: {}, range: 14 };
+  const out = { goals: { dur: 480, bed: '23:00', wake: '07:00', tol: 30 }, goalsSet: false, log: {}, range: 14, naps: {}, napOn: null };
   if (!d || typeof d !== 'object') return out;
+  // Siestes : naps[date] = [{ s: début 'HH:MM', d: durée en min, t: 0 volontaire / 1 assoupi, f?: 1 groggy · 2 pareil · 3 en forme, c?: 1 café avant }]
+  if (d.naps && typeof d.naps === 'object') Object.keys(d.naps).forEach(k => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !Array.isArray(d.naps[k])) return;
+    const list = d.naps[k].filter(n => n && isT(n.s) && Number.isInteger(n.d) && n.d >= 1 && n.d <= 300).slice(0, 6).map(n => {
+      const e = { s: n.s, d: n.d, t: n.t === 1 ? 1 : 0 };
+      if ([1, 2, 3].includes(n.f)) e.f = n.f;
+      if (n.c === 1) e.c = 1;
+      return e;
+    }).sort((x, y) => x.s.localeCompare(y.s));
+    if (list.length) out.naps[k] = list;
+  });
+  if (d.napOn && /^\d{4}-\d{2}-\d{2}$/.test(d.napOn.k) && isT(d.napOn.s) && typeof d.napOn.at === 'number' && Date.now() - d.napOn.at < 12 * 3600000) out.napOn = { k: d.napOn.k, s: d.napOn.s, at: d.napOn.at };
   if (d.goals) {
     const g = d.goals;
     out.goals = { dur: Number.isInteger(g.dur) && g.dur >= 60 && g.dur <= 900 ? g.dur : 480, bed: isT(g.bed) ? g.bed : '23:00', wake: isT(g.wake) ? g.wake : '07:00', tol: [0, 15, 30, 45, 60].includes(g.tol) ? g.tol : 30 };
@@ -1348,36 +1380,90 @@ function mapOff(p) {
     serving: sq > 0 && sq < 5000 ? { qty: r1(sq), label: String(p.serving_size || '').slice(0, 40) } : null
   };
 }
-async function offSearch(q) {
+// Requête JSON avec délai max ; s'arrête aussi si la recherche est abandonnée (nouvelle saisie, fermeture)
+function offJson(url, ms, signal) {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
+  const stop = () => ctl.abort();
+  if (signal) { if (signal.aborted) ctl.abort(); else signal.addEventListener('abort', stop); }
+  return fetch(url, { signal: ctl.signal }).then(r => {
+    if (r.status === 429) { const e = new Error('rate'); e.code = 'rate'; throw e; }
+    if (!r.ok) { const e = new Error('http ' + r.status); e.code = 'error'; throw e; }
+    return r.json();
+  }).finally(() => { clearTimeout(t); if (signal) signal.removeEventListener('abort', stop); });
+}
+// Recherches envoyées au service « classique » (limité à 10 par minute)
+const offCgiLog = [];
+const cgiFree = () => { const now = Date.now(); while (offCgiLog.length && now - offCgiLog[0] > 60000) offCgiLog.shift(); return offCgiLog.length < 9; };
+// Un essai : le service rapide (search-a-licious) part tout de suite ; si rien d'utile au bout de 2,5 s
+// (ou s'il échoue avant), le service classique part aussi. La première liste non vide gagne.
+function offTry(q, signal) {
+  const fields = 'code,product_name,product_name_fr,generic_name_fr,brands,nutriments,serving_size,serving_quantity,quantity';
+  const urlFast = `https://search.openfoodfacts.org/search?q=${encodeURIComponent(q)}&langs=fr&page_size=30&fields=${fields}`;
+  const urlCgi = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=30&sort_by=unique_scans_n&lc=fr&tagtype_0=countries&tag_contains_0=contains&tag_0=france&fields=${fields}`;
+  return new Promise((resolve, reject) => {
+    let pending = 0, done = false, rate = false, empty = null, hedge = null;
+    const end = () => {
+      if (done || pending || hedge) return;
+      done = true;
+      if (empty) resolve(empty);
+      else { const e = new Error('off'); e.code = rate ? 'rate' : 'error'; reject(e); }
+    };
+    const launch = (url, ms, list) => {
+      pending++;
+      offJson(url, ms, signal)
+        .then(j => {
+          const items = (list(j) || []).map(mapOff).filter(Boolean);
+          if (done) return;
+          if (items.length) { done = true; clearTimeout(hedge); hedge = null; resolve(items); }
+          else empty = items;
+        })
+        .catch(e => { if (e.code === 'rate') rate = true; })
+        .finally(() => { pending--; if (hedge && !done) fireHedge(); else end(); });
+    };
+    const fireHedge = () => {
+      clearTimeout(hedge); hedge = null;
+      if (done) return;
+      if (!(signal && signal.aborted) && cgiFree()) { offCgiLog.push(Date.now()); launch(urlCgi, 20000, j => j.products); }
+      end();
+    };
+    launch(urlFast, 15000, j => j.hits || j.products);
+    hedge = setTimeout(fireHedge, 2500);
+  });
+}
+// Recherche complète : jusqu'à 3 essais automatiques (le serveur répond souvent mieux au 2e)
+async function offSearch(q, signal, onTry) {
   const key = norm(q).trim();
   if (offCache.has(key)) return offCache.get(key);
-  if (navigator.onLine === false) { const e = new Error('offline'); e.code = 'offline'; throw e; }
-  const fields = 'code,product_name,product_name_fr,generic_name_fr,brands,nutriments,serving_size,serving_quantity,quantity';
-  const url1 = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=30&sort_by=unique_scans_n&lc=fr&tagtype_0=countries&tag_contains_0=contains&tag_0=france&fields=${fields}`;
-  const url2 = `https://search.openfoodfacts.org/search?q=${encodeURIComponent(q)}&langs=fr&page_size=30`;
-  let items = null, rate = false;
-  try {
-    const r = await fetchT(url1, 12000);
-    if (r.status === 429 || r.status === 503) rate = true;
-    else if (r.ok) { const j = await r.json(); items = (j.products || []).map(mapOff).filter(Boolean); }
-  } catch (e) { /* on tente le second service */ }
-  if (items === null) {
+  const aborted = () => { const e = new Error('aborted'); e.code = 'aborted'; return e; };
+  const offline = () => { const e = new Error('offline'); e.code = 'offline'; return e; };
+  if (navigator.onLine === false) throw offline();
+  const waits = [0, 1500, 4000];
+  let last = null;
+  for (let i = 0; i < waits.length; i++) {
+    if (waits[i]) {
+      if (onTry) onTry(i + 1, waits.length);
+      await new Promise(r => setTimeout(r, waits[i]));
+    }
+    if (signal && signal.aborted) throw aborted();
     try {
-      const r = await fetchT(url2, 12000);
-      if (r.ok) { const j = await r.json(); items = (j.hits || j.products || []).map(mapOff).filter(Boolean); }
-      else if (r.status === 429 || r.status === 503) rate = true;
-    } catch (e) { /* rien */ }
+      const items = await offTry(q, signal);
+      offCache.set(key, items);
+      return items;
+    } catch (e) {
+      if (signal && signal.aborted) throw aborted();
+      if (navigator.onLine === false) throw offline();
+      last = e;
+      if (e.code === 'rate') break;        // inutile d'insister : il faut attendre la minute
+    }
   }
-  if (items === null) { const e = new Error('off'); e.code = rate ? 'rate' : (navigator.onLine === false ? 'offline' : 'error'); throw e; }
-  offCache.set(key, items);
-  return items;
+  throw last;
 }
 
 /* ---------- Feuille « Ajouter un aliment » ---------- */
 function openFoodSearch(k, opt = {}) {
   const pick = opt.pick || null;   // mode « ajouter un ingrédient à un repas » ou « ajouter à ma diète » (opt.plan)
   const plan = !!opt.plan;
-  const st = { q: '', moment: defaultMoment(), off: { q: '', status: 'idle', items: [] }, ciq: 'idle', timer: null };
+  const st = { q: '', moment: defaultMoment(), off: { q: '', status: 'idle', items: [] }, ciq: 'idle', timer: null, ctl: null, slow: null };
   const results = {};    // index → aliment, pour les clics
   openSheet('', (el, w) => {
     el.innerHTML = `<div class="shead"><button class="iconbtn" data-s="close" aria-label="Fermer">${I.close}</button>
@@ -1421,10 +1507,10 @@ function openFoodSearch(k, opt = {}) {
         html += `<div class="fsec">Produits du commerce · Open Food Facts</div>`;
         const o = st.off;
         if (o.q !== norm(q).trim() || o.status === 'idle') html += `<div class="fempty">Recherche en ligne dans un instant…</div>`;
-        else if (o.status === 'loading') html += `<div class="fempty"><span class="spin"></span> Recherche en ligne…</div>`;
+        else if (o.status === 'loading') html += `<div class="fempty"><span class="spin"></span> ${o.tryN > 1 ? `Open Food Facts n’a pas répondu, nouvel essai (${o.tryN}/${o.max})…` : o.slow ? 'Recherche en ligne… Open Food Facts est lent, patiente encore un peu' : 'Recherche en ligne…'}</div>`;
         else if (o.status === 'offline') html += `<div class="fempty">Pas de connexion internet. Les aliments de base restent disponibles.</div>`;
         else if (o.status === 'rate') html += `<div class="fempty">Trop de recherches en peu de temps. Réessaie dans une minute.<br><button class="link" data-s="retry">Réessayer</button></div>`;
-        else if (o.status === 'error') html += `<div class="fempty">Open Food Facts ne répond pas.<br><button class="link" data-s="retry">Réessayer</button></div>`;
+        else if (o.status === 'error') html += `<div class="fempty">Open Food Facts ne répond pas après 3 essais. Le service est peut-être surchargé : réessaie dans un moment.<br><button class="link" data-s="retry">Réessayer</button></div>`;
         else html += o.items.length ? o.items.map(f => row(f, i++, false)).join('') : `<div class="fempty">Aucun produit trouvé pour « ${esc(q)} »</div>`;
       }
       if (!q && !mine.length) html += `<div class="fempty" style="padding-top:26px">Tape le nom d’un aliment. La recherche couvre tes aliments, la table Ciqual (aliments de base) et Open Food Facts (produits du commerce, avec connexion).</div>`;
@@ -1433,17 +1519,27 @@ function openFoodSearch(k, opt = {}) {
         <div class="dim small" style="text-align:center;margin-top:12px">Données : Ciqual (Anses, 2025) et Open Food Facts (ODbL)</div>`;
       $('#fres', el).innerHTML = html;
     };
+    const stopOff = () => { if (st.ctl) { st.ctl.abort(); st.ctl = null; if (st.off.status === 'loading') st.off.status = 'idle'; } clearTimeout(st.slow); };
     const runOff = async () => {
       const q = st.q.trim(); const key = norm(q).trim();
       if (q.length < 3) return;
-      st.off = { q: key, status: 'loading', items: [] }; draw();
-      try { const items = await offSearch(q); if (st.off.q === key) { st.off = { q: key, status: 'ok', items }; draw(); } }
-      catch (e) { if (st.off.q === key) { st.off = { q: key, status: e.code || 'error', items: [] }; draw(); } }
+      if (st.off.q === key && (st.off.status === 'loading' || st.off.status === 'ok')) return;  // déjà lancée
+      stopOff();
+      const ctl = new AbortController(); st.ctl = ctl;
+      st.off = { q: key, status: 'loading', items: [], tryN: 1, slow: false }; draw();
+      st.slow = setTimeout(() => { if (st.ctl === ctl) { st.off.slow = true; draw(); } }, 5000);
+      try {
+        const items = await offSearch(q, ctl.signal, (n, max) => { if (st.ctl === ctl) { st.off.tryN = n; st.off.max = max; draw(); } });
+        if (st.ctl === ctl) { st.off = { q: key, status: 'ok', items }; draw(); }
+      } catch (e) {
+        if (e.code !== 'aborted' && st.ctl === ctl) { st.off = { q: key, status: e.code || 'error', items: [] }; draw(); }
+      } finally { if (st.ctl === ctl) { st.ctl = null; clearTimeout(st.slow); } }
     };
     const inp = $('#fq', el);
     inp.addEventListener('input', () => {
       st.q = inp.value; st.more = false; draw();
       clearTimeout(st.timer);
+      if (st.off.q !== norm(st.q).trim()) stopOff();   // la recherche en cours ne correspond plus au texte
       if (st.q.trim().length >= 2 && !CIQ) loadCiqual().then(draw).catch(() => { st.ciq = 'error'; draw(); });
       if (st.q.trim().length >= 3) st.timer = setTimeout(runOff, 900);
     });
@@ -1459,11 +1555,11 @@ function openFoodSearch(k, opt = {}) {
       else if (a === 'editFood') openFoodForm(results[+b.dataset.i], name => { st.q = name; inp.value = name; draw(); });
       else if (a === 'newFood') openFoodForm(null, name => { st.q = name; inp.value = name; draw(); });
       else if (a === 'quick') openQuick(k, null, { moment: st.moment, fromSearch: true });
-      else if (a === 'retry') { offCache.delete(norm(st.q).trim()); runOff(); }
+      else if (a === 'retry') { offCache.delete(norm(st.q).trim()); st.off.status = 'idle'; runOff(); }
       else if (a === 'more') { st.more = true; draw(); }
     });
     w._refresh = draw;
-    w._onClose = () => clearTimeout(st.timer);
+    w._onClose = () => { clearTimeout(st.timer); stopOff(); };
     loadCiqual().then(() => { if (st.q) draw(); }).catch(() => { st.ciq = 'error'; });
     drawMoms(); draw();
     setTimeout(() => { try { inp.focus(); } catch (e) {} }, 320);
@@ -2004,7 +2100,7 @@ let sleepView = todayKey();
 const tMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
 const tStr = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`; };
 const fmtTime = t => t.replace(':', ' h ');
-const fmtDur = m => { m = Math.round(m); const h = Math.floor(m / 60), mm = m % 60; return mm ? `${h} h ${pad(mm)}` : `${h} h`; };
+const fmtDur = m => { m = Math.round(m); const h = Math.floor(m / 60), mm = m % 60; return h === 0 ? `${mm} min` : mm ? `${h} h ${pad(mm)}` : `${h} h`; };
 const fmtGap = m => { m = Math.round(Math.abs(m)); return m < 60 ? `${m} min` : fmtDur(m); };
 // Heures du soir sur un axe continu : 12:00 → 0, 23:00 → 660, 01:00 → 780
 const bedAxis = t => (tMin(t) - 720 + 1440) % 1440;
@@ -2052,7 +2148,7 @@ function vSleep() {
         ${badge(c.ok.wake, 'Lever', c.wakeLate === 0 ? 'à l’heure' : c.wakeLate < 0 ? `${fmtGap(c.wakeLate)} plus tôt` : `${fmtGap(c.wakeLate)} plus tard`)}
       </div>${nightFeel(n)}<div class="mute small" style="margin-top:10px;text-align:center">Touche pour modifier</div></button>`;
   }
-  return html + sleepStats(k);
+  return html + napDayCard(k, n) + sleepStats(k);
 }
 // Bloc « ressenti » de la carte de la nuit
 function nightFeel(n) {
@@ -2074,7 +2170,7 @@ function sleepStats(k) {
   const got = nights.filter(x => x.n);
   let html = `<div class="section sec-row"><span>Suivi</span><span class="mute small" style="text-transform:none;letter-spacing:0;font-weight:600">touche une barre pour voir la nuit</span></div>
     <div class="ncard"><div class="seg small-seg">${[[7, '7 nuits'], [14, '14 nuits'], [30, '30 nuits']].map(([v, l]) => `<button data-act="sleepRange" data-v="${v}" class="${range === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
-  if (!got.length) return html + `<div class="mute small" style="text-align:center;padding:16px 0 6px">Aucune nuit renseignée sur cette période.</div></div>`;
+  if (!got.length) return html + `<div class="mute small" style="text-align:center;padding:16px 0 6px">Aucune nuit renseignée sur cette période.</div></div>` + napStats(days, k, range);
   const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
   const avgDur = avg(got.map(x => x.c.d));
   const avgBed = tStr(avg(got.map(x => bedAxis(x.n.bed))) + 720), avgWake = tStr(avg(got.map(x => tMin(x.n.wake))));
@@ -2095,7 +2191,7 @@ function sleepStats(k) {
   html += `<div class="subhead" style="margin-top:18px">Durée de chaque nuit</div>` + sleepDurChart(nights, k);
   html += `<div class="subhead">Horaires de coucher et de lever</div>` + sleepWindowChart(nights, k);
   html += `<div class="legend" style="margin-top:8px"><span><i style="background:#818CF8"></i>Objectifs respectés</span><span><i style="background:#FBBF24"></i>1 ou 2 objectifs</span><span><i style="background:#FB923C"></i>Aucun</span></div></div>`;
-  return html + sleepQuality(nights, k, range);
+  return html + sleepQuality(nights, k, range) + napStats(days, k, range);
 }
 
 // Qualité ressentie : moyenne, évolution, ce qui l'influence
@@ -2221,6 +2317,208 @@ function sleepWindowChart(nights, k) {
     s += `</g>`;
   });
   return s + `</svg><div class="mute small">Lignes pointillées : tes objectifs de coucher et de lever (zone claire = marge de ${S.sleep.goals.tol} min).</div>`;
+}
+
+/* ---------- Siestes ---------- */
+// Repères tirés des études : Brooks & Lack (Sleep, 2006), Tietzel & Lack (2001), Rosekind et al. / NASA (1995),
+// Reyner & Horne (1997, sieste-café), Sleep Foundation (horaires), Consensus Sleep Diary (sieste ou assoupissement)
+const NAP_DUR = [10, 15, 20, 26, 30, 45, 60, 90];
+const NAP_FEEL = [['😵‍💫', 'Groggy'], ['😐', 'Comme avant'], ['⚡', 'En forme']];
+const napsOf = k => S.sleep.naps[k] || [];
+const napMin = k => napsOf(k).reduce((a, n) => a + n.d, 0);
+// Heure limite de fin de sieste : 8 h avant le coucher visé (en minutes depuis minuit du jour de la sieste)
+const napLimit = () => bedAxis(S.sleep.goals.bed) + 720 - 480;
+function napCheck(n) {
+  const st = tMin(n.s), en = st + n.d, lim = napLimit();
+  let dur;
+  if (n.d < 10) dur = [1, 'Très courte', 'Moins de 10 min : effet limité. Dans l’étude de Brooks et Lack (2006), 5 min de sommeil n’apportaient presque rien.'];
+  else if (n.d <= 20) dur = [2, 'Durée idéale', '10 à 20 min : regain de vigilance rapide, sans être groggy au réveil. La sieste de 10 min était la plus efficace de l’étude de Brooks et Lack.'];
+  else if (n.d <= 30) dur = [2, 'Bonne durée', 'Jusqu’à 30 min : proche de la « sieste NASA » (26 min de sommeil). Un peu de lourdeur possible les premières minutes.'];
+  else if (n.d < 75) dur = [0, 'Risque d’être groggy', 'Au-delà de 30 min, on entre en sommeil profond : le réveil est souvent pâteux (inertie du sommeil) avant que le bénéfice n’arrive.'];
+  else if (n.d <= 110) dur = [1, 'Cycle complet', 'Autour de 90 min, un cycle complet limite la lourdeur au réveil, mais une sieste aussi longue réduit ton besoin de sommeil la nuit.'];
+  else dur = [0, 'Trop longue', 'Plus de 2 h : c’est presque une seconde nuit, et elle risque de décaler ton coucher.'];
+  let time;
+  if (en > lim) time = [0, 'Trop tardive', `Finie à ${fmtTime(tStr(en))}, moins de 8 h avant ton coucher prévu (${fmtTime(S.sleep.goals.bed)}). Les siestes tardives rendent l’endormissement plus difficile le soir.`];
+  else if (st >= 780 && st <= 900) time = [2, 'Bon moment', 'Entre 13 h et 15 h : c’est le creux naturel de début d’après-midi, le meilleur moment pour une sieste.'];
+  else time = [1, 'Horaire correct', 'En dehors du creux de 13 h–15 h, mais assez tôt pour ne pas gêner ta nuit.'];
+  return { dur, time, end: en, good: dur[0] === 2 && time[0] >= 1, bad: dur[0] === 0 || time[0] === 0 };
+}
+const lvlColor = l => l === 2 ? '#818CF8' : l === 1 ? '#FBBF24' : '#FB923C';
+const napColor = c => c.good ? '#818CF8' : c.bad ? '#FB923C' : '#FBBF24';
+
+function napDayCard(k, night) {
+  const naps = napsOf(k), on = S.sleep.napOn, isT = k === todayKey();
+  let html = `<div class="section sec-row"><span>Siestes · ${isT ? 'aujourd’hui' : fmtShort(k)}</span><button data-act="napTips">Bien faire sa sieste</button></div><div class="ncard">`;
+  if (on && on.k === k) {
+    const el = Math.max(0, Math.round((Date.now() - on.at) / 60000));
+    html += `<div class="napon"><div class="snote" style="background:#A5B4FC">💤</div><div><b>Sieste en cours depuis <span class="napclock">${fmtGap(el)}</span></b>
+      <span>Commencée à ${fmtTime(on.s)} · réveil conseillé vers ${fmtTime(tStr(tMin(on.s) + 25))} (≈ 5 min pour t’endormir + 20 min de sieste)</span></div></div>
+      <div class="ncard-actions"><button class="btn" data-act="napStop">☀️ Je suis réveillé</button><button class="gadd" data-act="napCancel">Annuler</button></div>`;
+  }
+  if (naps.length) {
+    html += naps.map((n, i) => {
+      const c = napCheck(n);
+      return `<button class="napitem" data-act="napEdit" data-k="${k}" data-i="${i}">
+        <i style="background:${napColor(c)}"></i>
+        <div><b>${n.t ? '💤 Assoupi' : '😴 Sieste'} de ${fmtDur(n.d)}${n.c ? ' ☕' : ''}</b>
+          <span>${fmtTime(n.s)} → ${fmtTime(tStr(c.end))} · ${c.dur[1].toLowerCase()} · ${c.time[1].toLowerCase()}${n.f ? ` · ${NAP_FEEL[n.f - 1][0]} ${NAP_FEEL[n.f - 1][1].toLowerCase()} au réveil` : ''}</span></div></button>`;
+    }).join('');
+    const tot = napMin(k);
+    if (night) html += `<div class="pace" style="margin:10px 2px 2px">Sommeil sur 24 h : <b>${fmtDur(nightDur(night))}</b> de nuit + <b>${fmtDur(tot)}</b> de sieste = <b>${fmtDur(nightDur(night) + tot)}</b></div>`;
+  } else if (!(on && on.k === k)) html += `<div class="mute small" style="text-align:center;padding:2px 0 4px">Pas de sieste notée${isT ? ' aujourd’hui' : ' ce jour-là'}.</div>`;
+  if (!(on && on.k === k)) html += `<div class="ncard-actions">${isT && !on ? `<button class="btn" data-act="napStart">💤 Je commence une sieste</button>` : ''}<button class="${isT && !on ? 'gadd' : 'btn ghost'}" data-act="napAdd" data-k="${k}">+ Noter une sieste</button></div>`;
+  return html + `</div>`;
+}
+
+function openNap(k, idx, preset) {
+  const list = napsOf(k), cur = idx !== undefined ? list[idx] : null;
+  const st = cur ? { ...cur } : { s: '14:00', d: 20, t: 0, ...(preset || {}) };
+  openSheet('', el => {
+    const draw = () => {
+      const c = napCheck(st), top = el.scrollTop;
+      el.innerHTML = `<div class="grab"></div><h2>${cur ? 'Modifier la sieste' : 'Noter une sieste'}</h2>
+        <div class="mute small" style="margin-bottom:16px">${fmtDay(k)}</div>
+        <div class="seg" style="margin-bottom:16px"><button data-p="t" data-v="0" class="${st.t ? '' : 'on'}">😴 Sieste voulue</button><button data-p="t" data-v="1" class="${st.t ? 'on' : ''}">💤 Assoupi sans le vouloir</button></div>
+        <div class="goalgrid">
+          <div><label class="l" for="ps">Début</label><input class="inp big" id="ps" type="time" value="${st.s}"></div>
+          <div><span class="l">Fin</span><div class="inp big napend">${fmtTime(tStr(c.end))}</div></div></div>
+        <div class="field" style="margin-top:16px"><span class="l">Durée (de l’endormissement au réveil)</span>
+          <div class="durpick"><button data-p="dm">−</button><b>${fmtDur(st.d)}</b><button data-p="dp">+</button></div>
+          <div class="quick wrapq">${NAP_DUR.map(v => `<button data-p="d" data-v="${v}" class="${st.d === v ? 'on' : ''}">${v === 26 ? '26 min · NASA' : v + ' min'}</button>`).join('')}</div></div>
+        <div class="napverdict">
+          <div><i style="background:${lvlColor(c.dur[0])}"></i><b>${c.dur[1]}</b><span>${c.dur[2]}</span></div>
+          <div><i style="background:${lvlColor(c.time[0])}"></i><b>${c.time[1]}</b><span>${c.time[2]}</span></div></div>
+        <div class="field" style="margin-top:18px"><span class="l">Au réveil, tu étais… <span style="font-weight:500">(facultatif)</span></span>
+          <div class="rate" style="grid-template-columns:repeat(3,1fr)">${NAP_FEEL.map(([e, l], i) => `<button data-p="f" data-v="${i + 1}" class="${st.f === i + 1 ? 'on' : ''}"><i>${e}</i>${l}</button>`).join('')}</div></div>
+        <button class="qnone ${st.c ? 'on' : ''}" data-p="c" style="text-align:left;padding:12px 14px">☕ Café bu juste avant <span class="dim" style="font-weight:500">— « sieste-café » : la caféine agit au moment du réveil</span></button>
+        <button class="btn" data-p="save" style="margin-top:16px">Enregistrer</button>
+        ${cur ? '<button class="btn danger" data-p="delete">Effacer cette sieste</button>' : ''}`;
+      $('#ps', el).addEventListener('change', e => { if (e.target.value) { st.s = e.target.value.slice(0, 5); draw(); } });
+      el.scrollTop = top;
+    };
+    draw();
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-p]'); if (!b) return;
+      const a = b.dataset.p, v = +b.dataset.v;
+      if (a === 't') { st.t = v; draw(); }
+      else if (a === 'dm') { st.d = Math.max(1, st.d - 5); draw(); }
+      else if (a === 'dp') { st.d = Math.min(300, st.d + 5); draw(); }
+      else if (a === 'd') { st.d = v; draw(); }
+      else if (a === 'f') { if (st.f === v) delete st.f; else st.f = v; draw(); }
+      else if (a === 'c') { if (st.c) delete st.c; else st.c = 1; draw(); }
+      else if (a === 'save') {
+        const s0 = $('#ps', el).value.slice(0, 5);
+        if (!/^\d{2}:\d{2}$/.test(s0)) { toast('Indique l’heure de début'); return; }
+        const e2 = { s: s0, d: st.d, t: st.t ? 1 : 0 };
+        if (st.f) e2.f = st.f; if (st.c) e2.c = 1;
+        const arr = [...list];
+        if (cur) arr[idx] = e2; else { if (arr.length >= 6) { toast('6 siestes maximum par jour'); return; } arr.push(e2); }
+        arr.sort((x, y) => x.s.localeCompare(y.s));
+        S.sleep.naps[k] = arr; save(); closeSheet(); refresh();
+        const c = napCheck(e2);
+        toast(`Sieste enregistrée · ${fmtDur(e2.d)} · ${c.good ? 'bien placée 👍' : c.bad ? (c.time[0] === 0 ? 'trop tardive' : c.dur[1].toLowerCase()) : c.dur[1].toLowerCase()}`);
+      } else if (a === 'delete') {
+        const old = [...list]; const arr = list.filter((_, i) => i !== idx);
+        if (arr.length) S.sleep.naps[k] = arr; else delete S.sleep.naps[k];
+        save(); closeSheet(); refresh();
+        toast('Sieste effacée', 'Annuler', () => { S.sleep.naps[k] = old; save(); refresh(); });
+      }
+    });
+  });
+}
+function napStart() {
+  const d = new Date();
+  S.sleep.napOn = { k: todayKey(), s: `${pad(d.getHours())}:${pad(d.getMinutes())}`, at: Date.now() };
+  save(); refresh();
+  toast('Bonne sieste ! Pense à mettre une alarme dans 25 min');
+}
+function napStop() {
+  const on = S.sleep.napOn; if (!on) return;
+  const d = Math.min(300, Math.max(1, Math.round((Date.now() - on.at) / 60000)));
+  S.sleep.napOn = null; save(); refresh();
+  openNap(on.k, undefined, { s: on.s, d });
+}
+function openNapTips() {
+  const g = S.sleep.goals;
+  openSheet(`<div class="grab"></div><h2>Bien faire sa sieste</h2>
+    <div class="mute small" style="margin-bottom:14px">Ce que disent les études</div>
+    <div class="tips">
+      <div><b>⏱ 10 à 20 minutes</b><span>Dans l’étude de Brooks et Lack (Sleep, 2006), la sieste de 10 min améliorait tout de suite la vigilance, pendant plus de 2 h ; celle de 20 min aussi, mais après une demi-heure ; celle de 30 min laissait d’abord groggy.</span></div>
+      <div><b>🚀 La « sieste NASA »</b><span>Des pilotes de long-courrier qui disposaient de 40 min ont dormi en moyenne 26 min (en s’endormant en ~6 min) : vigilance et performances nettement meilleures en fin de vol (Rosekind et al., 1995).</span></div>
+      <div><b>🕐 Entre 13 h et 15 h</b><span>C’est le creux naturel du début d’après-midi. Une sieste trop tardive diminue la pression de sommeil et retarde l’endormissement : vise une fin au moins 8 h avant ton coucher (ici avant ${fmtTime(tStr(napLimit()))}).</span></div>
+      <div><b>😵‍💫 Éviter 30 à 75 min</b><span>Au-delà d’une demi-heure, on entre en sommeil profond : le réveil est pâteux (inertie du sommeil). Si tu as besoin de plus, vise un cycle complet d’environ 90 min.</span></div>
+      <div><b>☕ La sieste-café</b><span>Un café juste avant une sieste de moins de 20 min : la caféine agit au réveil. Chez des conducteurs fatigués, c’était plus efficace que le café ou la sieste seuls (Reyner et Horne, 1997). À éviter l’après-midi si tu es sensible à la caféine.</span></div>
+      <div><b>⏰ Mets une alarme</b><span>Compte ~5 min pour t’endormir : pour 20 min de sieste, une alarme à 25 min.</span></div>
+      <div><b>💤 S’assoupir souvent sans le vouloir</b><span>Des siestes de plus en plus longues et fréquentes peuvent signaler un manque de sommeil la nuit. Si ça persiste alors que tu dors assez, parles-en à un médecin.</span></div>
+    </div>
+    <button class="btn ghost" data-close="1" style="margin-top:14px">Fermer</button>`, el => el.addEventListener('click', e => { if (e.target.closest('[data-close]')) closeSheet(); }));
+}
+
+// Statistiques des siestes sur la période affichée
+function napStats(days, k, range) {
+  const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+  const all = []; days.forEach(d => napsOf(d).forEach(n => all.push({ k: d, n, c: napCheck(n) })));
+  let html = `<div class="section">Mes siestes</div><div class="ncard">`;
+  if (!all.length) return html + `<div class="mute small" style="text-align:center;padding:6px 0 2px">Aucune sieste notée sur ces ${range} jours.</div></div>`;
+  const napDays = days.filter(d => napsOf(d).length);
+  const ok = all.filter(x => x.c.good).length, late = all.filter(x => x.c.time[0] === 0).length;
+  const shortN = all.filter(x => x.n.d <= 30).length;
+  // Sommeil moyen sur 24 h (jours avec une nuit renseignée)
+  const withNight = days.filter(d => S.sleep.log[d]);
+  const tot24 = withNight.length ? avg(withNight.map(d => nightDur(S.sleep.log[d]) + napMin(d))) : null;
+  html += `<div class="wstats" style="grid-template-columns:1fr 1fr;margin-top:0">
+    <div><b>${all.length}</b><span>sieste${all.length > 1 ? 's' : ''} sur ${napDays.length} jour${napDays.length > 1 ? 's' : ''} (sur ${range})</span></div>
+    <div><b>${fmtDur(avg(all.map(x => x.n.d)))}</b><span>durée moyenne d’une sieste</span></div>
+    <div><b>${ok} / ${all.length}</b><span>bien faites (≤ 30 min, pas trop tard)</span></div>
+    <div><b>${tot24 !== null ? fmtDur(tot24) : '—'}</b><span>sommeil moyen sur 24 h, siestes comprises</span></div></div>`;
+  html += `<div class="srates">${[['Durée ≤ 30 min', shortN], ['Pas trop tard', all.length - late]].map(([l, n]) => { const p = n / all.length; return `<div style="grid-template-columns:104px 1fr 42px"><span>${l}</span><div class="mbar"><i style="width:${(p * 100).toFixed(0)}%;background:${p >= .8 ? 'var(--accent)' : p >= .5 ? '#FBBF24' : '#FB923C'}"></i></div><b>${n}/${all.length}</b></div>`; }).join('')}</div>`;
+  // Repères personnels
+  const lines = [];
+  const feel = (arr) => { const f = arr.filter(x => x.n.f); return f.length >= 2 ? { n: f.length, g: f.filter(x => x.n.f === 1).length, top: f.filter(x => x.n.f === 3).length } : null; };
+  const fs = feel(all.filter(x => x.n.d <= 30)), fl = feel(all.filter(x => x.n.d > 30));
+  if (fs && fl) lines.push(['Groggy au réveil', `${fs.g}/${fs.n} après ≤ 30 min`, `${fl.g}/${fl.n} après > 30 min`]);
+  const fc = feel(all.filter(x => x.n.c)), fn = feel(all.filter(x => !x.n.c));
+  if (fc && fn) lines.push(['En forme au réveil', `${fc.top}/${fc.n} avec café`, `${fn.top}/${fn.n} sans café`]);
+  // Effet sur la nuit suivante (nuit qui se termine le lendemain)
+  const after = d => S.sleep.log[addDays(d, 1)];
+  const nightsWith = days.filter(d => napsOf(d).length && after(d)), nightsWithout = days.filter(d => !napsOf(d).length && after(d));
+  const stat = (arr, f) => { const v = arr.map(d => f(after(d))).filter(x => x !== null); return v.length >= 2 ? avg(v) : null; };
+  const nW = stat(nightsWith, n => nightNote(n)), nO = stat(nightsWithout, n => nightNote(n));
+  if (nW !== null && nO !== null) lines.push(['Note de la nuit suivante', `${fmtNote(nW)}/10 après une sieste`, `${fmtNote(nO)}/10 sans sieste`]);
+  const bW = stat(nightsWith, n => bedAxis(n.bed)), bO = stat(nightsWithout, n => bedAxis(n.bed));
+  if (bW !== null && bO !== null) lines.push(['Coucher moyen le soir', `${fmtTime(tStr(bW + 720))} après une sieste`, `${fmtTime(tStr(bO + 720))} sans sieste`]);
+  const badDays = days.filter(d => napsOf(d).some(n => napCheck(n).bad) && after(d)), goodDays = days.filter(d => napsOf(d).length && !napsOf(d).some(n => napCheck(n).bad) && after(d));
+  const bd = stat(badDays, n => nightNote(n)), gd = stat(goodDays, n => nightNote(n));
+  if (bd !== null && gd !== null) lines.push(['Nuit suivante selon la sieste', `${fmtNote(gd)}/10 sieste bien faite`, `${fmtNote(bd)}/10 longue ou tardive`]);
+  if (lines.length) html += `<div class="subhead" style="margin-top:14px">Tes repères</div>` + lines.map(([t, a, b]) => `<div class="naprow"><b>${t}</b><span>${a}</span><span>${b}</span></div>`).join('');
+  else html += `<div class="mute small" style="margin-top:12px">Continue à noter tes siestes (et ton ressenti au réveil) : l’appli comparera tes nuits avec et sans sieste dès qu’il y aura au moins 2 cas de chaque.</div>`;
+  // Assoupissements involontaires fréquents sur les 7 derniers jours
+  let doz = 0; for (let i = 0; i < 7; i++) doz += napsOf(addDays(k, -i)).filter(n => n.t === 1).length;
+  if (doz >= 3) html += `<div class="napwarn">💤 Tu t’es assoupi sans le vouloir ${doz} fois en 7 jours. S’endormir souvent dans la journée peut être un signe de manque de sommeil la nuit.</div>`;
+  html += `<div class="subhead" style="margin-top:16px">Minutes de sieste par jour</div>` + napChart(days, k);
+  html += `<div class="legend" style="margin-top:8px"><span><i style="background:#818CF8"></i>Bien faite</span><span><i style="background:#FBBF24"></i>À surveiller</span><span><i style="background:#FB923C"></i>Trop longue ou tardive</span></div></div>`;
+  return html;
+}
+function napChart(days, k) {
+  const W = 340, H = 120, P = 4, B = 16, T = 10, n = days.length, bw = (W - 2 * P) / n;
+  const max = Math.max(60, ...days.map(napMin));
+  const y = v => T + (H - T - B) * (1 - v / max);
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart"><rect x="${P}" y="${y(30).toFixed(1)}" width="${W - 2 * P}" height="${(y(10) - y(30)).toFixed(1)}" fill="#818CF8" opacity=".08"/>
+    <text x="${P + 2}" y="${(y(30) - 3).toFixed(1)}" font-size="9" fill="#5A6070">zone idéale 10–30 min</text>`;
+  days.forEach((d, i) => {
+    const bx = P + i * bw + bw * 0.16, w = bw * 0.68, naps = napsOf(d);
+    s += `<g data-act="sleepDay" data-k="${d}" style="cursor:pointer"><rect x="${(P + i * bw).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
+    let base = H - B;
+    naps.forEach(nn => {
+      const hh = (H - T - B) * nn.d / max;
+      s += `<rect x="${bx.toFixed(1)}" y="${(base - hh).toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(1.5, hh - 1).toFixed(1)}" rx="${Math.min(3, w / 3).toFixed(1)}" fill="${napColor(napCheck(nn))}"/>`;
+      base -= hh;
+    });
+    if (d === k && naps.length) s += `<rect x="${(bx - 1.5).toFixed(1)}" y="${(base - 1.5).toFixed(1)}" width="${(w + 3).toFixed(1)}" height="${(H - B - base + 3).toFixed(1)}" rx="4" fill="none" stroke="#F2F3F5" stroke-width="1.5"/>`;
+    if (n <= 14 || i % 5 === 4 || d === k) s += `<text x="${(bx + w / 2).toFixed(1)}" y="${H - 3}" text-anchor="middle" font-size="${n > 14 ? 9 : 10}" fill="${d === k ? '#F2F3F5' : '#5A6070'}" font-weight="700">${n > 14 ? parse(d).getDate() : LETTER[parse(d).getDay()]}</text>`;
+    s += `</g>`;
+  });
+  return s + `</svg>`;
 }
 
 // Saisie d'une nuit
@@ -2965,7 +3263,7 @@ function openSettings() {
       <button class="setrow" data-s="export">${I.down}<span>Exporter une sauvegarde (.json)</span></button>
       <button class="setrow" data-s="import">${I.up}<span>Importer une sauvegarde ou un suivi de diète</span></button>
       <button class="setrow red" data-s="reset">${I.trash}<span>Tout effacer</span></button>
-      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.13</div>`;
+      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.15</div>`;
     };
     w._refresh = draw; draw();
     el.addEventListener('click', async e => {
@@ -3138,6 +3436,12 @@ app.addEventListener('click', e => {
     case 'sleepNight': openNight(sleepView); break;
     case 'sleepGoals': openSleepGoals(); break;
     case 'sleepRange': S.sleep.range = +el.dataset.v; save(); renderMain(); break;
+    case 'napAdd': openNap(el.dataset.k || sleepView); break;
+    case 'napEdit': openNap(el.dataset.k, +el.dataset.i); break;
+    case 'napStart': napStart(); break;
+    case 'napStop': napStop(); break;
+    case 'napCancel': S.sleep.napOn = null; save(); refresh(); break;
+    case 'napTips': openNapTips(); break;
     case 'editEntry': openEntry(dietView, el.dataset.id); break;
     case 'dietPrev': dietView = addDays(dietView, -1); dietMonth = dietView.slice(0, 7); renderMain(); break;
     case 'dietNext': if (dietView < todayKey()) { dietView = addDays(dietView, 1); dietMonth = dietView.slice(0, 7); renderMain(); } break;
@@ -3169,6 +3473,12 @@ document.addEventListener('visibilitychange', () => {
   if (t !== lastToday) { if (view === lastToday) view = t; if (dietView === lastToday) { dietView = t; dietMonth = t.slice(0, 7); } if (sleepView === lastToday) sleepView = t; lastToday = t; }
   refresh();
 });
+
+// Sieste en cours : le compteur avance pendant que l'onglet est affiché
+setInterval(() => {
+  const on = S.sleep && S.sleep.napOn, c = document.querySelector('.napclock');
+  if (on && c) c.textContent = fmtGap(Math.max(0, Math.round((Date.now() - on.at) / 60000)));
+}, 20000);
 
 renderMain();
 })();
