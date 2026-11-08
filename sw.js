@@ -1,5 +1,5 @@
 // Service worker Lock In : réseau d'abord, cache en secours (fonctionne hors ligne)
-const CACHE = 'lockin-v8';
+const CACHE = 'lockin-v11';
 const ASSETS = [
   './',
   './index.html',

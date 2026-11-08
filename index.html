@@ -386,6 +386,66 @@ body.task-dragging{user-select:none;-webkit-user-select:none}
 .gml{flex:none;width:112px}
 .gml button{padding:12px 8px;font-size:15px}
 
+/* Sommeil */
+.sleep-empty{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:22px 16px}
+.sleep-empty b{font-size:17px}
+.sleep-empty .btn{margin-top:10px}
+.sleep-night{display:block;width:100%;text-align:left}
+.snk{display:flex;justify-content:space-between;align-items:baseline}
+.snk b{font-size:32px;font-weight:800;letter-spacing:-.02em;color:#A5B4FC}
+.snk span{color:var(--mute);font-weight:650}
+.sscore{font-weight:800;font-size:14px;padding:4px 10px;border-radius:999px;background:#262A33}
+.sscore.s3{background:#818CF8;color:#0E0F12}
+.sscore.s0{background:#FB923C;color:#0E0F12}
+.sscore.s1,.sscore.s2{background:#FBBF24;color:#0E0F12}
+.stimes{display:flex;align-items:center;gap:10px;margin-top:12px;font-weight:700;font-size:16px}
+.stimes i{flex:1;height:2px;background:linear-gradient(90deg,#818CF8,#FBBF24);border-radius:1px}
+.sbadges{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.sbadge{background:var(--card2);border-radius:12px;padding:9px 10px}
+.sbadge b{display:block;font-size:13.5px}
+.sbadge span{display:block;font-size:11.5px;color:var(--mute);margin-top:2px;line-height:1.3}
+.sbadge.ok b{color:#A5B4FC}
+.sbadge.ko b{color:#FB923C}
+.srates{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.srates div{display:grid;grid-template-columns:70px 1fr 42px;align-items:center;gap:10px}
+.srates span{font-size:13px;font-weight:650;color:var(--mute)}
+.srates .mbar{margin:0}
+.srates b{font-size:13px;text-align:right}
+.nprev{background:var(--card);border-radius:14px;padding:12px 14px;margin-top:14px;font-size:14px}
+.nprev b{color:#A5B4FC;font-size:18px}
+.nprev span{display:block;color:var(--mute);font-size:12.5px;margin-top:4px}
+.durpick{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:14px;padding:6px}
+.durpick button{width:48px;height:44px;border-radius:10px;background:var(--card2);font-size:22px;font-weight:700}
+.durpick b{font-size:24px;font-weight:800}
+input[type=time].inp{color-scheme:dark;width:100%;min-width:0}
+.goalgrid > div{min-width:0}
+
+/* Repas composés */
+.mealsbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card2);border-radius:14px;padding:11px 14px;margin-top:8px;font-size:20px}
+.mealsbtn b{display:block;font-size:14.5px}
+.mealsbtn small{display:block;font-size:12.5px;color:var(--mute);margin-top:1px}
+.mealsbtn span{flex:1;min-width:0}
+.mealsbtn i{font-style:normal;color:var(--mute);font-size:22px}
+.mealcard{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:16px;padding:6px 10px 6px 4px;margin-top:10px}
+.mc-body{flex:1;min-width:0;text-align:left;padding:8px 8px}
+.mc-body small{display:block;color:var(--mute);font-size:12.5px;margin-top:2px}
+.mc-per{margin-top:6px}
+.mc-per b{color:var(--accent);font-size:16px}
+.mc-per span{color:var(--mute);font-size:12.5px;margin-left:4px}
+.mealcard .gadd{padding:12px 12px;white-space:nowrap}
+.ilist{display:flex;flex-direction:column;gap:6px}
+.irow{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:14px;padding:8px 6px 8px 12px}
+.iname{flex:1;min-width:0}
+.iname small{display:block;color:var(--mute);font-size:12px;margin-top:2px}
+.irow .iq{width:78px;flex:none;text-align:right;padding:10px 8px;font-weight:700}
+.irow .iu{width:34px;flex:none;color:var(--mute);font-size:13px;font-weight:650}
+.mtot{margin-top:14px}
+.mtot > span{font-size:13px;color:var(--mute);font-weight:650}
+
+.iadd{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.iadd .qnone{margin:0}
+.iedit{flex:none;background:var(--card2);border-radius:10px;padding:10px 10px;font-size:12.5px;font-weight:700;color:var(--mute);white-space:nowrap}
+
 /* Toast */
 .toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translate(-50%,16px);background:#F2F3F5;color:#0E0F12;padding:12px 16px;border-radius:14px;font-weight:650;font-size:14px;display:flex;gap:16px;align-items:center;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:90;width:max-content;max-width:calc(100% - 32px)}
 .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
@@ -443,6 +503,7 @@ const I = {
   today: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>',
   stats: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="M8 14h2M14 14h2M8 17.5h2"/></svg>',
   list: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
   food: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8a2 2 0 0 0 2 2v8M5 3v5M9 3v5M17 21V3c-2 1.5-3 4-3 7v3h3"/></svg>',
   tasks: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12l3 3 5-6"/></svg>',
   down: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>',
@@ -461,11 +522,29 @@ function load() {
         if (!Array.isArray(d.tasks)) d.tasks = [];
         d.tasks.forEach(t => { if (![1, 2, 3, 4].includes(t.q)) t.q = null; t.repeat = cleanRepeat(t.repeat); });
         d.diet = sanitizeDiet(d.diet);
+        d.sleep = sanitizeSleep(d.sleep);
         return d;
       }
     }
   } catch (e) {}
-  return { v: 1, habits: [], tasks: [], diet: sanitizeDiet(null) };
+  return { v: 1, habits: [], tasks: [], diet: sanitizeDiet(null), sleep: sanitizeSleep(null) };
+}
+// Sommeil : une nuit est rangée à la date du réveil ({ bed: 'HH:MM', wake: 'HH:MM' })
+function sanitizeSleep(d) {
+  const isT = v => typeof v === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
+  const out = { goals: { dur: 480, bed: '23:00', wake: '07:00', tol: 30 }, goalsSet: false, log: {}, range: 14 };
+  if (!d || typeof d !== 'object') return out;
+  if (d.goals) {
+    const g = d.goals;
+    out.goals = { dur: Number.isInteger(g.dur) && g.dur >= 60 && g.dur <= 900 ? g.dur : 480, bed: isT(g.bed) ? g.bed : '23:00', wake: isT(g.wake) ? g.wake : '07:00', tol: [0, 15, 30, 45, 60].includes(g.tol) ? g.tol : 30 };
+  }
+  out.goalsSet = !!d.goalsSet;
+  if ([7, 14, 30].includes(d.range)) out.range = d.range;
+  if (d.log && typeof d.log === 'object') Object.keys(d.log).forEach(k => {
+    const n = d.log[k];
+    if (/^\d{4}-\d{2}-\d{2}$/.test(k) && n && isT(n.bed) && isT(n.wake)) out.log[k] = { bed: n.bed, wake: n.wake };
+  });
+  return out;
 }
 // Données de diète : reconstruites proprement (sert au chargement et aux imports)
 function sanitizeDiet(d) {
@@ -475,11 +554,16 @@ function sanitizeDiet(d) {
   const okId = v => (typeof v === 'string' && /^[a-z0-9]{1,40}$/i.test(v) ? v : uid());
   const nut = n => ({ kcal: num(n && n.kcal), p: num(n && n.p), c: num(n && n.c), f: num(n && n.f) });
   const moment = m => (MOMENT_IDS.includes(m) ? m : 'lunch');
-  const out = { goals: { kcal: 2500, p: 150, c: 300, f: 80 }, goalsSet: false, foods: [], log: {}, weightHabit: null, wRange: '90', kRange: 14 };
+  const out = { goals: { kcal: 2500, p: 150, c: 300, f: 80 }, goalsSet: false, foods: [], meals: [], log: {}, weightHabit: null, wRange: '90', kRange: 14 };
   if (!d || typeof d !== 'object') return out;
   if (d.goals) out.goals = { kcal: num(d.goals.kcal, 2500), p: num(d.goals.p, 150), c: num(d.goals.c, 300), f: num(d.goals.f, 80) };
   out.goalsSet = !!d.goalsSet;
   out.mlFixed = !!d.mlFixed;
+  if (Array.isArray(d.meals)) out.meals = d.meals.filter(m => m && str(m.name).trim() && Array.isArray(m.items)).map(m => ({
+    id: okId(m.id), name: str(m.name, 80), portions: Math.min(100, Math.max(1, Math.round(num(m.portions, 1)))),
+    items: m.items.filter(it => it && str(it.name).trim()).map(it => ({ name: str(it.name), qty: num(it.qty, 0), unit: str(it.unit, 15) || 'g', base: num(it.base, 100) || 100, n: nut(it.n), manual: it.manual === true })),
+    used: num(m.used), created: num(m.created)
+  }));
   if (Array.isArray(d.foods)) out.foods = d.foods.filter(x => x && str(x.name).trim()).map(x => ({
     id: okId(x.id), name: str(x.name), unit: str(x.unit, 15) || 'g', base: num(x.base, 100) || 100, n: nut(x.n),
     src: ['mine', 'ciqual', 'off'].includes(x.src) ? x.src : 'mine', brand: str(x.brand, 80),
@@ -490,7 +574,7 @@ function sanitizeDiet(d) {
     if (!Array.isArray(d.log[k])) return;
     const list = d.log[k].filter(e => e && str(e.name).trim()).map(e => ({
       id: okId(e.id), name: str(e.name), qty: num(e.qty, 1), unit: str(e.unit, 15) || 'portion', base: num(e.base, 1) || 1,
-      n: nut(e.n), moment: moment(e.moment), foodId: typeof e.foodId === 'string' ? okId(e.foodId) : null, quick: e.quick === true
+      n: nut(e.n), moment: moment(e.moment), foodId: typeof e.foodId === 'string' ? okId(e.foodId) : null, quick: e.quick === true, meal: e.meal === true
     }));
     if (list.length) out.log[k] = list;
   });
@@ -916,6 +1000,7 @@ function dayCard(k) {
         <div class="mbar"><i style="width:${(p * 100).toFixed(1)}%"></i></div></div>`;
     }).join('')}</div>
     <div class="ncard-actions"><button class="btn" data-act="addFood">+ Ajouter un aliment</button><button class="gadd" data-act="quickAdd">⚡ Ajout rapide</button></div>
+    <button class="mealsbtn" data-act="meals">🍲 <span><b>Mes repas · meal prep</b><small>${S.diet.meals.length ? `${S.diet.meals.length} repas enregistré${S.diet.meals.length > 1 ? 's' : ''} · ajoute une portion` : 'Compose un plat et divise-le en portions'}</small></span><i>›</i></button>
   </div>`;
   if (!S.diet.goalsSet && !(S.diet.log[k] || []).length) html += `<div class="hint" style="margin-top:8px">Touche « Objectifs » pour régler tes calories et tes macros</div>`;
   return html;
@@ -933,7 +1018,7 @@ function mealsHtml(k) {
     html += `<div class="meal"><div class="mhead"><span>${ic} ${label}</span><span>${fmtNum(r0(kc))} kcal</span></div>
       ${list.map(e => { const x = entryTot(e);
         return `<button class="frow" data-act="editEntry" data-id="${e.id}"><div><div class="fname">${esc(e.name)}</div>
-          <small>${e.quick ? '⚡ Ajout rapide' : esc(qtyLabel(e.qty, e.unit))} · P ${fmtG(x.p)} · G ${fmtG(x.c)} · L ${fmtG(x.f)}</small></div><b>${fmtNum(r0(x.kcal))}</b></button>`;
+          <small>${e.quick ? '⚡ Ajout rapide' : (e.meal ? '🍲 ' : '') + esc(qtyLabel(e.qty, e.unit))} · P ${fmtG(x.p)} · G ${fmtG(x.c)} · L ${fmtG(x.f)}</small></div><b>${fmtNum(r0(x.kcal))}</b></button>`;
       }).join('')}</div>`;
   });
   return html;
@@ -1219,20 +1304,26 @@ async function offSearch(q) {
 }
 
 /* ---------- Feuille « Ajouter un aliment » ---------- */
-function openFoodSearch(k) {
+function openFoodSearch(k, opt = {}) {
+  const pick = opt.pick || null;   // mode « ajouter un ingrédient à un repas »
   const st = { q: '', moment: defaultMoment(), off: { q: '', status: 'idle', items: [] }, ciq: 'idle', timer: null };
   const results = {};    // index → aliment, pour les clics
   openSheet('', (el, w) => {
     el.innerHTML = `<div class="shead"><button class="iconbtn" data-s="close" aria-label="Fermer">${I.close}</button>
-        <h2 style="margin:0">Ajouter un aliment</h2><span style="width:42px"></span></div>
-      <div class="mute small" style="margin:-8px 0 10px">${fmtDay(k)}</div>
+        <h2 style="margin:0">${pick ? 'Ajouter un ingrédient' : 'Ajouter un aliment'}</h2><span style="width:42px"></span></div>
+      <div class="mute small" style="margin:-8px 0 10px">${pick ? 'Pour ton repas' : fmtDay(k)}</div>
       <div class="momchips" id="moms"></div>
       <div class="searchbar"><input class="inp" id="fq" type="search" enterkeyhint="search" autocomplete="off" placeholder="Rechercher : riz, poulet, yaourt…"></div>
-      <button class="quickbtn" data-s="quick">⚡ <span><b>Ajout rapide</b><small>Juste un nom, les calories et les macros</small></span></button>
+      ${pick ? '' : `<button class="quickbtn" data-s="quick">⚡ <span><b>Ajout rapide</b><small>Juste un nom, les calories et les macros</small></span></button>`}
       <div id="fres"></div>`;
-    const drawMoms = () => { $('#moms', el).innerHTML = MOMENTS.map(([id, l, ic]) => `<button data-s="moment" data-v="${id}" class="${st.moment === id ? 'on' : ''}">${ic} ${l}</button>`).join(''); };
+    const drawMoms = () => { if (pick) return; $('#moms', el).innerHTML = MOMENTS.map(([id, l, ic]) => `<button data-s="moment" data-v="${id}" class="${st.moment === id ? 'on' : ''}">${ic} ${l}</button>`).join(''); };
     const row = (f, idx, canEdit) => {
       results[idx] = f;
+      if (f.src === 'meal') {
+        return `<div class="fitem"><button class="fpick" data-s="pick" data-i="${idx}"><div class="fname">🍲 ${esc(f.name)}</div>
+          <small>${f.portions} portion${f.portions > 1 ? 's' : ''} · <b>${fmtNum(r0(f.n.kcal))} kcal</b> · P ${fmtG(f.n.p)} · G ${fmtG(f.n.c)} · L ${fmtG(f.n.f)} <span class="dim">/ portion</span></small></button>
+          <button class="act" data-s="editMeal" data-i="${idx}" aria-label="Modifier">${I.edit}</button></div>`;
+      }
       const sub = f.src === 'ciqual' ? f.group : f.src === 'off' ? (f.brand || 'Produit du commerce') : (f.brand ? 'Mes aliments · ' + f.brand : 'Mes aliments');
       return `<div class="fitem"><button class="fpick" data-s="pick" data-i="${idx}"><div class="fname">${esc(f.name)}</div>
         <small>${esc(sub)} · <b>${fmtNum(r0(f.n.kcal))} kcal</b> · P ${fmtG(f.n.p)} · G ${fmtG(f.n.c)} · L ${fmtG(f.n.f)} <span class="dim">/ ${esc(per(f))}</span></small></button>
@@ -1242,6 +1333,10 @@ function openFoodSearch(k) {
       for (const key in results) delete results[key];
       let html = '', i = 0;
       const q = st.q.trim();
+      if (!pick) {
+        const meals = q ? searchList(S.diet.meals, q, 20) : [...S.diet.meals].sort((a, b) => (b.used || 0) - (a.used || 0)).slice(0, 10);
+        if (meals.length) html += `<div class="fsec">Mes repas</div>` + meals.map(m => row(mealAsFood(m), i++, false)).join('');
+      }
       const mine = q ? searchList(S.diet.foods, q, 30) : [...S.diet.foods].sort((a, b) => (b.used || 0) - (a.used || 0) || a.name.localeCompare(b.name)).slice(0, 40);
       if (mine.length) html += `<div class="fsec">${q ? 'Mes aliments' : 'Mes aliments · récents'}</div>` + mine.map(f => row(f, i++, true)).join('');
       if (q.length >= 2) {
@@ -1262,7 +1357,8 @@ function openFoodSearch(k) {
         else html += o.items.length ? o.items.map(f => row(f, i++, false)).join('') : `<div class="fempty">Aucun produit trouvé pour « ${esc(q)} »</div>`;
       }
       if (!q && !mine.length) html += `<div class="fempty" style="padding-top:26px">Tape le nom d’un aliment. La recherche couvre tes aliments, la table Ciqual (aliments de base) et Open Food Facts (produits du commerce, avec connexion).</div>`;
-      html += `<button class="qnone" data-s="newFood" style="margin-top:16px">+ Créer un aliment à la main</button>
+      html += `${pick ? '' : `<button class="qnone" data-s="newMeal" style="margin-top:16px">🍲 Créer un repas (meal prep)</button>`}
+        <button class="qnone" data-s="newFood" style="margin-top:${pick ? 16 : 8}px">+ Créer un aliment à la main</button>
         <div class="dim small" style="text-align:center;margin-top:12px">Données : Ciqual (Anses, 2025) et Open Food Facts (ODbL)</div>`;
       $('#fres', el).innerHTML = html;
     };
@@ -1286,7 +1382,9 @@ function openFoodSearch(k) {
       const a = b.dataset.s;
       if (a === 'close') closeSheet();
       else if (a === 'moment') { st.moment = b.dataset.v; drawMoms(); }
-      else if (a === 'pick') openPortion(results[+b.dataset.i], { date: k, moment: st.moment, fromSearch: true });
+      else if (a === 'pick') openPortion(results[+b.dataset.i], { date: k, moment: st.moment, fromSearch: true, pick });
+      else if (a === 'editMeal') openMealEditor(S.diet.meals.find(m => m.id === results[+b.dataset.i].mealId));
+      else if (a === 'newMeal') openMealEditor(null);
       else if (a === 'editFood') openFoodForm(results[+b.dataset.i], name => { st.q = name; inp.value = name; draw(); });
       else if (a === 'newFood') openFoodForm(null, name => { st.q = name; inp.value = name; draw(); });
       else if (a === 'quick') openQuick(k, null, { moment: st.moment, fromSearch: true });
@@ -1307,7 +1405,7 @@ function openPortion(food, ctx) {
   const st = {
     qty: entry ? entry.qty : food.serving ? food.serving.qty : food.base === 1 ? 1 : 100,
     moment: entry ? entry.moment : (food.moment && !ctx.fromSearch ? food.moment : ctx.moment || defaultMoment()),
-    keep: food.src !== 'mine'
+    keep: food.src !== 'mine' && food.src !== 'meal'
   };
   const unitIsMass = food.base !== 1;
   if (unitIsMass) st.unit = entry ? entry.unit : food.unit;
@@ -1316,7 +1414,7 @@ function openPortion(food, ctx) {
     const draw = () => {
       const tot = { kcal: food.n.kcal * st.qty / food.base, p: food.n.p * st.qty / food.base, c: food.n.c * st.qty / food.base, f: food.n.f * st.qty / food.base };
       el.innerHTML = `<div class="grab"></div><h2 style="line-height:1.25">${esc(food.name)}</h2>
-        <div class="mute small">${esc(food.src === 'ciqual' ? 'Ciqual · ' + food.group : food.src === 'off' ? (food.brand || 'Open Food Facts') : food.src === 'entry' ? 'Dans ton journal' : 'Mes aliments')}
+        <div class="mute small">${esc(food.src === 'ciqual' ? 'Ciqual · ' + food.group : food.src === 'off' ? (food.brand || 'Open Food Facts') : food.src === 'entry' ? 'Dans ton journal' : food.src === 'meal' ? `Repas en ${food.portions} portions` : 'Mes aliments')}
           · pour ${esc(per(food))} : ${fmtNum(r0(food.n.kcal))} kcal · P ${fmtG(food.n.p)} · G ${fmtG(food.n.c)} · L ${fmtG(food.n.f)}</div>
         <label class="l" for="pq" style="margin-top:18px">Quantité</label>
         <div class="gcustom"><input class="inp big" id="pq" inputmode="decimal" autocomplete="off" value="${String(st.qty).replace('.', ',')}">
@@ -1324,12 +1422,12 @@ function openPortion(food, ctx) {
             : `<span class="punit">${esc(food.unit === 'portion' ? 'portion(s)' : food.unit)}</span>`}</div>
         <div class="quick" style="flex-wrap:wrap">${food.serving ? `<button data-p="qty" data-v="${food.serving.qty}" class="${st.qty === food.serving.qty ? 'on' : ''}">1 portion${food.serving.label ? ' (' + esc(food.serving.label) + ')' : ''}</button>` : ''}
           ${chips.map(c => `<button data-p="qty" data-v="${c}" class="${st.qty === c ? 'on' : ''}">${fmtNum(c)}${unitIsMass ? ' ' + esc(st.unit) : ''}</button>`).join('')}</div>
-        <span class="l" style="margin-top:16px">Moment</span>
-        <div class="momchips">${MOMENTS.map(([id, l, ic]) => `<button data-p="moment" data-v="${id}" class="${st.moment === id ? 'on' : ''}">${ic} ${l}</button>`).join('')}</div>
+        ${ctx.pick ? '' : `<span class="l" style="margin-top:16px">Moment</span>
+        <div class="momchips">${MOMENTS.map(([id, l, ic]) => `<button data-p="moment" data-v="${id}" class="${st.moment === id ? 'on' : ''}">${ic} ${l}</button>`).join('')}</div>`}
         <div class="ptot"><div><b id="pk">${fmtNum(r0(tot.kcal))}</b><span>kcal</span></div>
           ${MACROS.map(([key, l, col]) => `<div style="--mc:${col}"><b id="p${key}">${fmtG(tot[key])}</b><span>${l} (g)</span></div>`).join('')}</div>
-        ${!entry && food.src !== 'mine' ? `<label class="keep"><input type="checkbox" id="pkeep" ${st.keep ? 'checked' : ''}> Garder dans mes aliments</label>` : ''}
-        <button class="btn" data-p="save">${entry ? 'Enregistrer' : 'Ajouter'}</button>
+        ${!entry && food.src !== 'mine' && food.src !== 'meal' ? `<label class="keep"><input type="checkbox" id="pkeep" ${st.keep ? 'checked' : ''}> Garder dans mes aliments</label>` : ''}
+        <button class="btn" data-p="save">${entry ? 'Enregistrer' : ctx.pick ? 'Ajouter au repas' : 'Ajouter'}</button>
         ${entry ? '<button class="btn danger" data-p="delete">Retirer du journal</button>' : ''}`;
       const q = $('#pq', el);
       q.addEventListener('input', () => {
@@ -1370,7 +1468,13 @@ function openPortion(food, ctx) {
           if (same) { same.used = Date.now(); foodId = same.id; }
           else { const nf = { id: uid(), name: food.name, unit, base: food.base, n: { ...food.n }, src: 'mine', brand: food.src === 'ciqual' ? 'Ciqual' : (food.brand || 'Open Food Facts'), serving: food.serving || null, moment: null, used: Date.now() }; S.diet.foods.push(nf); foodId = nf.id; }
         }
-        const e2 = { id: uid(), name: food.name, qty: st.qty, unit, base: food.base, n: { ...food.n }, moment: st.moment, foodId };
+        if (ctx.pick) {
+          save();
+          ctx.pick({ name: food.name, qty: st.qty, unit, base: food.base, n: { ...food.n } });
+          closeSheet(2); return;
+        }
+        if (food.src === 'meal') { const m = S.diet.meals.find(x => x.id === food.mealId); if (m) m.used = Date.now(); }
+        const e2 = { id: uid(), name: food.name, qty: st.qty, unit, base: food.base, n: { ...food.n }, moment: st.moment, foodId, meal: food.src === 'meal' };
         (S.diet.log[ctx.date] = S.diet.log[ctx.date] || []).push(e2);
         save(); closeSheet(ctx.fromSearch ? 2 : 1); refresh();
         toast(`Ajouté · ${fmtNum(r0(entryTot(e2).kcal))} kcal`, 'Annuler', () => { const l = S.diet.log[ctx.date] || []; const j = l.indexOf(e2); if (j >= 0) l.splice(j, 1); if (!l.length) delete S.diet.log[ctx.date]; save(); refresh(); });
@@ -1378,6 +1482,165 @@ function openPortion(food, ctx) {
     });
   });
 }
+/* ---------- Repas composés (meal prep) ---------- */
+const itemTot = it => ({ kcal: it.n.kcal * it.qty / it.base, p: it.n.p * it.qty / it.base, c: it.n.c * it.qty / it.base, f: it.n.f * it.qty / it.base });
+function mealTotal(m) {
+  const t = { kcal: 0, p: 0, c: 0, f: 0 };
+  m.items.forEach(it => { const x = itemTot(it); t.kcal += x.kcal; t.p += x.p; t.c += x.c; t.f += x.f; });
+  return t;
+}
+const mealPer = m => { const t = mealTotal(m), n = m.portions || 1; return { kcal: r1(t.kcal / n), p: r1(t.p / n), c: r1(t.c / n), f: r1(t.f / n) }; };
+const mealAsFood = m => ({ name: m.name, unit: 'portion', base: 1, n: mealPer(m), src: 'meal', mealId: m.id, portions: m.portions, key: norm(m.name) });
+
+// Liste « Mes repas »
+function openMeals(k) {
+  openSheet('', (el, w) => {
+    const draw = () => {
+      const list = [...S.diet.meals].sort((a, b) => (b.used || 0) - (a.used || 0) || a.name.localeCompare(b.name));
+      el.innerHTML = `<div class="shead"><button class="iconbtn" data-m="close" aria-label="Fermer">${I.close}</button><h2 style="margin:0">Mes repas</h2><span style="width:42px"></span></div>
+        <div class="mute small" style="margin:-6px 0 14px;line-height:1.45">Compose un plat avec tes aliments, divise-le en portions, puis ajoute une portion à ton journal chaque jour.</div>
+        <button class="btn" data-m="new">+ Créer un repas</button>
+        ${list.length ? list.map(m => {
+          const pp = mealPer(m), t = mealTotal(m);
+          return `<div class="mealcard"><button class="mc-body" data-m="edit" data-id="${m.id}">
+              <div class="fname">🍲 ${esc(m.name)}</div>
+              <small>${m.items.length} ingrédient${m.items.length > 1 ? 's' : ''} · ${fmtNum(r0(t.kcal))} kcal au total · ${m.portions} portion${m.portions > 1 ? 's' : ''}</small>
+              <div class="mc-per"><b>${fmtNum(r0(pp.kcal))} kcal</b><span>/ portion · P ${fmtG(pp.p)} · G ${fmtG(pp.c)} · L ${fmtG(pp.f)}</span></div></button>
+            <button class="gadd" data-m="add" data-id="${m.id}">+ 1 portion</button></div>`;
+        }).join('') : `<div class="fempty" style="text-align:center;padding:26px 6px">Aucun repas pour l’instant.</div>`}`;
+    };
+    w._refresh = draw; draw();
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-m]'); if (!b) return;
+      const a = b.dataset.m, m = S.diet.meals.find(x => x.id === b.dataset.id);
+      if (a === 'close') closeSheet();
+      else if (a === 'new') openMealEditor(null);
+      else if (a === 'edit' && m) openMealEditor(m);
+      else if (a === 'add' && m) openPortion(mealAsFood(m), { date: k, moment: defaultMoment(), fromSearch: true });
+    });
+  }, true);
+}
+
+// Création / modification d'un repas
+function openMealEditor(meal) {
+  const isNew = !meal;
+  const st = meal ? { name: meal.name, portions: meal.portions, items: meal.items.map(it => ({ ...it, n: { ...it.n } })) } : { name: '', portions: 4, items: [] };
+  openSheet('', (el, w) => {
+    const totals = () => {
+      const t = mealTotal(st), n = st.portions || 1;
+      const box = (label, v) => `<div class="mtot"><span>${label}</span><div class="ptot" style="margin-top:6px">
+        <div><b>${fmtNum(r0(v.kcal))}</b><span>kcal</span></div>${MACROS.map(([key, l, col]) => `<div style="--mc:${col}"><b>${fmtG(v[key])}</b><span>${l} (g)</span></div>`).join('')}</div></div>`;
+      return box('Total du plat', t) + box(`Par portion (÷ ${n})`, { kcal: t.kcal / n, p: t.p / n, c: t.c / n, f: t.f / n });
+    };
+    const draw = () => {
+      el.innerHTML = `<div class="shead"><button class="iconbtn" data-e="close" aria-label="Fermer">${I.close}</button>
+          <h2 style="margin:0">${isNew ? 'Nouveau repas' : 'Modifier le repas'}</h2><span style="width:42px"></span></div>
+        <div class="field"><label class="l" for="mn">Nom du repas</label>
+          <input class="inp" id="mn" maxlength="80" autocomplete="off" placeholder="Ex : Poulet riz brocolis, chili con carne…" value="${esc(st.name)}"></div>
+        <span class="l">Ingrédients (pour tout le plat)</span>
+        <div class="ilist">${st.items.length ? st.items.map((it, i) => { const x = itemTot(it);
+          return `<div class="irow"><div class="iname"><div class="fname">${esc(it.name)}</div><small id="ik${i}">${fmtNum(r0(x.kcal))} kcal · P ${fmtG(x.p)} · G ${fmtG(x.c)} · L ${fmtG(x.f)}</small></div>
+            ${it.manual ? `<button class="iedit" data-e="editManual" data-i="${i}">✎ à la main</button>`
+              : `<input class="inp iq" data-i="${i}" inputmode="decimal" autocomplete="off" value="${String(it.qty).replace('.', ',')}"><span class="iu">${esc(it.unit === 'portion' ? 'port.' : it.unit)}</span>`}
+            <button class="act del" data-e="rm" data-i="${i}" aria-label="Retirer">${I.close}</button></div>`; }).join('')
+          : `<div class="fempty">Ajoute les aliments de ta recette avec leurs quantités totales (ex. 600 g de riz cru, 1 kg de poulet). Si un aliment est introuvable, ou pour saisir directement les totaux du plat, utilise « Macros à la main ».</div>`}</div>
+        <div class="iadd"><button class="qnone" data-e="addItem">+ Ingrédient</button><button class="qnone" data-e="addManual">✎ Macros à la main</button></div>
+        <span class="l" style="margin-top:18px">Nombre de portions</span>
+        <div class="durpick"><button data-e="pm">−</button><b>${st.portions} portion${st.portions > 1 ? 's' : ''}</b><button data-e="pp">+</button></div>
+        <div id="mtots">${totals()}</div>
+        ${isNew ? '' : '<div class="mute small" style="margin-top:10px">Modifier le repas ne change pas les portions déjà notées dans ton journal.</div>'}
+        <button class="btn" data-e="save">${isNew ? 'Créer le repas' : 'Enregistrer'}</button>
+        ${isNew ? '' : '<button class="btn danger" data-e="delete">Supprimer le repas</button>'}`;
+      $('#mn', el).addEventListener('input', e => { st.name = e.target.value; });
+      el.querySelectorAll('.iq').forEach(inp => inp.addEventListener('input', () => {
+        const i = +inp.dataset.i, v = parseFloat(inp.value.replace(',', '.'));
+        if (!(v >= 0)) return;
+        st.items[i].qty = v;
+        const x = itemTot(st.items[i]);
+        $('#ik' + i, el).textContent = `${fmtNum(r0(x.kcal))} kcal · P ${fmtG(x.p)} · G ${fmtG(x.c)} · L ${fmtG(x.f)}`;
+        $('#mtots', el).innerHTML = totals();
+      }));
+    };
+    draw();
+    el.addEventListener('click', async e => {
+      const b = e.target.closest('[data-e]'); if (!b) return;
+      const a = b.dataset.e;
+      if (a === 'close') closeSheet();
+      else if (a === 'rm') { st.items.splice(+b.dataset.i, 1); draw(); }
+      else if (a === 'addItem') openFoodSearch(null, { pick: item => { st.items.push(item); draw(); } });
+      else if (a === 'addManual') openManualItem(null, item => { st.items.push(item); draw(); });
+      else if (a === 'editManual') { const i = +b.dataset.i; openManualItem(st.items[i], item => { if (item) st.items[i] = item; else st.items.splice(i, 1); draw(); }); }
+      else if (a === 'pm') { st.portions = Math.max(1, st.portions - 1); draw(); }
+      else if (a === 'pp') { st.portions = Math.min(100, st.portions + 1); draw(); }
+      else if (a === 'save') {
+        const name = st.name.trim();
+        if (!name) { const i = $('#mn', el); i.classList.add('shake'); i.focus(); setTimeout(() => i.classList.remove('shake'), 600); toast('Donne un nom à ton repas'); return; }
+        if (!st.items.length) { toast('Ajoute au moins un ingrédient'); return; }
+        const items = st.items.filter(it => it.qty > 0).map(it => ({ name: it.name, qty: Math.round(it.qty * 100) / 100, unit: it.unit, base: it.base, n: it.n, manual: it.manual === true }));
+        if (!items.length) { toast('Indique les quantités des ingrédients'); return; }
+        if (isNew) S.diet.meals.push({ id: uid(), name, portions: st.portions, items, used: Date.now(), created: Date.now() });
+        else Object.assign(meal, { name, portions: st.portions, items });
+        save(); closeSheet(); refresh();
+        const pp = mealPer(isNew ? S.diet.meals[S.diet.meals.length - 1] : meal);
+        toast(`${isNew ? 'Repas créé' : 'Repas enregistré'} · ${fmtNum(r0(pp.kcal))} kcal par portion`);
+      }
+      else if (a === 'delete') {
+        const ok = await confirmBox('Supprimer ce repas ?', `« ${meal.name} » sera retiré de tes repas. Les portions déjà notées dans ton journal restent.`, 'Supprimer');
+        if (!ok) return;
+        const i = S.diet.meals.indexOf(meal); if (i >= 0) S.diet.meals.splice(i, 1);
+        save(); closeSheet(2); refresh();
+        toast(`« ${meal.name} » supprimé`, 'Annuler', () => { S.diet.meals.splice(Math.max(0, i), 0, meal); save(); refresh(); });
+      }
+    });
+  }, true);
+}
+
+// Ligne de repas saisie à la main : nom + calories et macros pour la quantité utilisée (ou pour tout le plat)
+function openManualItem(item, cb) {
+  const v0 = k => item ? String(item.n[k]).replace('.', ',') : '';
+  // Si les calories avaient été calculées depuis les macros, on laisse le champ vide pour qu'elles se recalculent
+  const autoK = item && item.n.kcal === Math.round(item.n.p * 4 + item.n.c * 4 + item.n.f * 9);
+  const st = { name: item ? item.name : '', kcal: autoK ? '' : v0('kcal'), p: v0('p'), c: v0('c'), f: v0('f') };
+  const val = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) && n >= 0 ? n : null; };
+  openSheet('', el => {
+    const calc = () => r0((val(st.p) || 0) * 4 + (val(st.c) || 0) * 4 + (val(st.f) || 0) * 9);
+    const hint = () => {
+      const m = calc();
+      if (!m && val(st.kcal) === null) return 'Remplis au moins les calories ou une macro.';
+      if (val(st.kcal) === null) return `Calories laissées vides : ${fmtNum(m)} kcal seront calculées depuis les macros.`;
+      return m ? `Tes macros font ${fmtNum(m)} kcal (protéines et glucides ×4, lipides ×9).` : '';
+    };
+    el.innerHTML = `<div class="grab"></div><h2>${item ? 'Modifier les macros' : '✎ Macros à la main'}</h2>
+      <div class="mute small" style="margin-bottom:14px;line-height:1.45">Indique les valeurs pour la quantité utilisée dans le plat. Pour saisir directement les totaux de tout le repas, mets les macros du plat entier : elles seront divisées par le nombre de portions.</div>
+      <div class="field"><label class="l" for="mi_n">Nom (facultatif)</label>
+        <input class="inp" id="mi_n" maxlength="80" autocomplete="off" placeholder="Ex : Sauce maison, Total du plat…" value="${esc(st.name)}"></div>
+      <div class="goalgrid">
+        <div><label class="l" for="mi_kcal">Calories (kcal)</label><input class="inp" id="mi_kcal" inputmode="decimal" autocomplete="off" placeholder="auto" value="${esc(st.kcal)}"></div>
+        <div><label class="l" for="mi_p">Protéines (g)</label><input class="inp" id="mi_p" inputmode="decimal" autocomplete="off" placeholder="0" value="${esc(st.p)}"></div>
+        <div><label class="l" for="mi_c">Glucides (g)</label><input class="inp" id="mi_c" inputmode="decimal" autocomplete="off" placeholder="0" value="${esc(st.c)}"></div>
+        <div><label class="l" for="mi_f">Lipides (g)</label><input class="inp" id="mi_f" inputmode="decimal" autocomplete="off" placeholder="0" value="${esc(st.f)}"></div></div>
+      <div class="mute small" id="mi_hint" style="margin-top:10px">${hint()}</div>
+      <button class="btn" data-mi="save">${item ? 'Enregistrer' : 'Ajouter au repas'}</button>
+      ${item ? '<button class="btn danger" data-mi="remove">Retirer du repas</button>' : ''}`;
+    el.addEventListener('input', e => {
+      const k = e.target.id.replace('mi_', '');
+      if (k === 'n') st.name = e.target.value; else if (k in st) st[k] = e.target.value;
+      $('#mi_hint', el).textContent = hint();
+    });
+    setTimeout(() => { try { $(item ? '#mi_kcal' : '#mi_n', el).focus(); } catch (e) {} }, 320);
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-mi]'); if (!b) return;
+      if (b.dataset.mi === 'remove') { cb(null); closeSheet(); return; }
+      for (const k of ['kcal', 'p', 'c', 'f']) if (String(st[k]).trim() !== '' && val(st[k]) === null) { toast('Vérifie les valeurs : uniquement des nombres'); return; }
+      const n = { p: r1(val(st.p) || 0), c: r1(val(st.c) || 0), f: r1(val(st.f) || 0) };
+      n.kcal = val(st.kcal) !== null ? r0(val(st.kcal)) : calc();
+      if (!n.kcal && !n.p && !n.c && !n.f) { toast('Indique au moins les calories ou une macro'); return; }
+      cb({ name: st.name.trim() || 'Macros à la main', qty: 1, unit: 'portion', base: 1, n, manual: true });
+      closeSheet();
+    });
+  });
+}
+
 /* ---------- Ajout rapide : un repas noté directement avec ses calories et ses macros ---------- */
 function openQuick(k, entry, ctx) {
   const st = entry
@@ -1530,6 +1793,214 @@ function importDiet(data) {
   weights.forEach(([k, v]) => { if (h.history[k] === undefined) h.history[k] = v; if (k < h.start) h.start = k; });
   save(); refresh();
   return { nf, ne, nw: weights.length };
+}
+
+/* =====================================================================
+   SOMMEIL : heure de coucher / de lever, objectifs, respect des objectifs
+   ===================================================================== */
+let sleepView = todayKey();
+const tMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const tStr = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`; };
+const fmtTime = t => t.replace(':', ' h ');
+const fmtDur = m => { m = Math.round(m); const h = Math.floor(m / 60), mm = m % 60; return mm ? `${h} h ${pad(mm)}` : `${h} h`; };
+const fmtGap = m => { m = Math.round(Math.abs(m)); return m < 60 ? `${m} min` : fmtDur(m); };
+// Heures du soir sur un axe continu : 12:00 → 0, 23:00 → 660, 01:00 → 780
+const bedAxis = t => (tMin(t) - 720 + 1440) % 1440;
+// Durée de la nuit (coucher la veille ou après minuit)
+const nightDur = n => { const b = tMin(n.bed), w = tMin(n.wake); return b < w ? w - b : w + 1440 - b; };
+function nightCheck(n) {
+  const g = S.sleep.goals, d = nightDur(n);
+  const bedLate = bedAxis(n.bed) - bedAxis(g.bed);            // > 0 : couché plus tard que prévu
+  const wakeLate = tMin(n.wake) - tMin(g.wake);               // > 0 : levé plus tard que prévu
+  const ok = { dur: d >= g.dur - g.tol, bed: bedLate <= g.tol, wake: Math.abs(wakeLate) <= g.tol };
+  return { d, bedLate, wakeLate, ok, score: (ok.dur ? 1 : 0) + (ok.bed ? 1 : 0) + (ok.wake ? 1 : 0) };
+}
+const nightLabel = k => `Nuit du ${parse(addDays(k, -1)).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })} au ${fmtShort(k)}`;
+
+function vSleep() {
+  const t = todayKey(), k = sleepView, isT = k === t, n = S.sleep.log[k], g = S.sleep.goals;
+  let html = `<div class="top"><div><div class="eyebrow">${nightLabel(k)}</div><h1>Sommeil</h1></div>
+    <button class="iconbtn" data-act="settings" aria-label="Réglages">${I.gear}</button></div>
+    <div class="daynav" style="margin-top:0"><button class="arrow" data-act="sleepPrev" aria-label="Nuit précédente">${I.left}</button>
+      <div class="lbl">${isT ? 'Cette nuit' : k === addDays(t, -1) ? 'La nuit d’avant' : fmtShort(k)}${isT ? '' : `<button data-act="sleepToday">Revenir à cette nuit</button>`}</div>
+      <button class="arrow" data-act="sleepNext" aria-label="Nuit suivante" ${isT ? 'disabled' : ''}>${I.right}</button></div>
+    <div class="sec-row" style="margin:16px 2px 8px"><span class="mute small" style="font-weight:700">Objectif ${fmtDur(g.dur)} · coucher ${fmtTime(g.bed)} · lever ${fmtTime(g.wake)} · marge ${g.tol} min</span><button data-act="sleepGoals">Objectifs</button></div>`;
+  if (!n) {
+    html += `<div class="ncard sleep-empty"><div style="font-size:34px">🌙</div><b>Pas encore renseignée</b>
+      <span class="mute small">À quelle heure t’es-tu couché et levé ?</span>
+      <button class="btn" data-act="sleepNight">Renseigner ma nuit</button></div>`;
+  } else {
+    const c = nightCheck(n);
+    const badge = (ok, label, detail) => `<div class="sbadge ${ok ? 'ok' : 'ko'}"><b>${ok ? '✓' : '✗'} ${label}</b><span>${detail}</span></div>`;
+    html += `<button class="ncard sleep-night" data-act="sleepNight">
+      <div class="snk"><div><b>${fmtDur(c.d)}</b><span> / ${fmtDur(g.dur)}</span></div><div class="sscore s${c.score}">${c.score}/3</div></div>
+      <div class="stimes"><span>🌙 ${fmtTime(n.bed)}</span><i></i><span>☀️ ${fmtTime(n.wake)}</span></div>
+      <div class="sbadges">
+        ${badge(c.ok.dur, 'Durée', c.d === g.dur ? 'pile' : c.d > g.dur ? `${fmtGap(c.d - g.dur)} de plus` : `il manque ${fmtGap(g.dur - c.d)}`)}
+        ${badge(c.ok.bed, 'Coucher', c.bedLate === 0 ? 'à l’heure' : c.bedLate < 0 ? `${fmtGap(c.bedLate)} plus tôt` : `${fmtGap(c.bedLate)} plus tard`)}
+        ${badge(c.ok.wake, 'Lever', c.wakeLate === 0 ? 'à l’heure' : c.wakeLate < 0 ? `${fmtGap(c.wakeLate)} plus tôt` : `${fmtGap(c.wakeLate)} plus tard`)}
+      </div><div class="mute small" style="margin-top:10px;text-align:center">Touche pour modifier</div></button>`;
+  }
+  return html + sleepStats(k);
+}
+
+// Statistiques sur 7 / 14 / 30 nuits finissant à la nuit affichée
+function sleepStats(k) {
+  const range = S.sleep.range || 14, g = S.sleep.goals;
+  const days = []; for (let i = range - 1; i >= 0; i--) days.push(addDays(k, -i));
+  const nights = days.map(d => S.sleep.log[d] ? { k: d, n: S.sleep.log[d], c: nightCheck(S.sleep.log[d]) } : { k: d });
+  const got = nights.filter(x => x.n);
+  let html = `<div class="section sec-row"><span>Suivi</span><span class="mute small" style="text-transform:none;letter-spacing:0;font-weight:600">touche une barre pour voir la nuit</span></div>
+    <div class="ncard"><div class="seg small-seg">${[[7, '7 nuits'], [14, '14 nuits'], [30, '30 nuits']].map(([v, l]) => `<button data-act="sleepRange" data-v="${v}" class="${range === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+  if (!got.length) return html + `<div class="mute small" style="text-align:center;padding:16px 0 6px">Aucune nuit renseignée sur cette période.</div></div>`;
+  const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+  const avgDur = avg(got.map(x => x.c.d));
+  const avgBed = tStr(avg(got.map(x => bedAxis(x.n.bed))) + 720), avgWake = tStr(avg(got.map(x => tMin(x.n.wake))));
+  const full = got.filter(x => x.c.score === 3).length;
+  // Série de nuits consécutives où les 3 objectifs sont respectés (en partant de la nuit affichée)
+  let streak = 0; for (let i = nights.length - 1; i >= 0; i--) { if (nights[i].n && nights[i].c.score === 3) streak++; else break; }
+  html += `<div class="wstats" style="grid-template-columns:1fr 1fr;margin-top:4px">
+      <div><b>${fmtDur(avgDur)}</b><span>durée moyenne (objectif ${fmtDur(g.dur)})</span></div>
+      <div><b>${full} / ${got.length}</b><span>nuits avec les 3 objectifs</span></div>
+      <div><b>${fmtTime(avgBed)}</b><span>coucher moyen (objectif ${fmtTime(g.bed)})</span></div>
+      <div><b>${fmtTime(avgWake)}</b><span>lever moyen (objectif ${fmtTime(g.wake)})</span></div></div>`;
+  if (streak) html += `<div class="pace" style="margin-top:0">🔥 Série en cours : <b>${streak} nuit${streak > 1 ? 's' : ''}</b> avec tous les objectifs</div>`;
+  // Taux de respect par objectif
+  html += `<div class="srates">${[['dur', 'Durée'], ['bed', 'Coucher'], ['wake', 'Lever']].map(([key, l]) => {
+    const n = got.filter(x => x.c.ok[key]).length, p = n / got.length;
+    return `<div><span>${l}</span><div class="mbar"><i style="width:${(p * 100).toFixed(0)}%;background:${p >= .8 ? 'var(--accent)' : p >= .5 ? '#FBBF24' : '#FB923C'}"></i></div><b>${n}/${got.length}</b></div>`;
+  }).join('')}</div>`;
+  html += `<div class="subhead" style="margin-top:18px">Durée de chaque nuit</div>` + sleepDurChart(nights, k);
+  html += `<div class="subhead">Horaires de coucher et de lever</div>` + sleepWindowChart(nights, k);
+  html += `<div class="legend" style="margin-top:8px"><span><i style="background:#818CF8"></i>Objectifs respectés</span><span><i style="background:#FBBF24"></i>1 ou 2 objectifs</span><span><i style="background:#FB923C"></i>Aucun</span></div></div>`;
+  return html;
+}
+const nightColor = c => c.score === 3 ? '#818CF8' : c.score === 0 ? '#FB923C' : '#FBBF24';
+function sleepDurChart(nights, k) {
+  const g = S.sleep.goals, W = 340, H = 140, P = 4, B = 16, T = 12, n = nights.length;
+  const max = Math.max(g.dur + 120, ...nights.filter(x => x.n).map(x => x.c.d));
+  const bw = (W - 2 * P) / n, y = v => T + (H - T - B) * (1 - v / max);
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart">`;
+  s += `<rect x="${P}" y="${y(g.dur).toFixed(1)}" width="${W - 2 * P}" height="${(y(g.dur - g.tol) - y(g.dur)).toFixed(1)}" fill="#818CF8" opacity=".08"/>`;
+  s += `<line x1="${P}" x2="${W - P}" y1="${y(g.dur).toFixed(1)}" y2="${y(g.dur).toFixed(1)}" stroke="#8B90A0" stroke-dasharray="4 4"/>`;
+  nights.forEach((x, i) => {
+    const bx = P + i * bw + bw * 0.16, w = bw * 0.68;
+    s += `<g data-act="sleepDay" data-k="${x.k}" style="cursor:pointer"><rect x="${(P + i * bw).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
+    if (x.n) {
+      const hh = (H - T - B) * x.c.d / max;
+      s += `<rect x="${bx.toFixed(1)}" y="${(H - B - hh).toFixed(1)}" width="${w.toFixed(1)}" height="${hh.toFixed(1)}" rx="${Math.min(3, w / 3).toFixed(1)}" fill="${nightColor(x.c)}"/>`;
+      if (x.k === k) s += `<rect x="${(bx - 1.5).toFixed(1)}" y="${(H - B - hh - 1.5).toFixed(1)}" width="${(w + 3).toFixed(1)}" height="${(hh + 3).toFixed(1)}" rx="4" fill="none" stroke="#F2F3F5" stroke-width="1.5"/>`;
+    }
+    if (n <= 14 || i % 5 === 4 || x.k === k) s += `<text x="${(bx + w / 2).toFixed(1)}" y="${H - 3}" text-anchor="middle" font-size="${n > 14 ? 9 : 10}" fill="${x.k === k ? '#F2F3F5' : '#5A6070'}" font-weight="700">${n > 14 ? parse(x.k).getDate() : LETTER[parse(x.k).getDay()]}</text>`;
+    s += `</g>`;
+  });
+  s += `<text x="${P + 2}" y="${(y(g.dur) - 4).toFixed(1)}" font-size="10" fill="#8B90A0">objectif ${fmtDur(g.dur)}</text></svg>`;
+  return s;
+}
+// Fenêtre de sommeil : une barre verticale du coucher au lever, sur un axe 18 h → 14 h
+function sleepWindowChart(nights, k) {
+  const g = S.sleep.goals, W = 340, H = 200, L = 38, R = 6, T = 8, B = 16, n = nights.length;
+  const got = nights.filter(x => x.n);
+  // axe en minutes depuis midi (coucher) ; le lever est placé à +1440 s'il est le lendemain
+  const pos = x => { const b = bedAxis(x.n.bed); return [b, b + nightDur(x.n)]; };
+  const gb = bedAxis(g.bed), gw = gb + ((tMin(g.wake) - tMin(g.bed) + 1440) % 1440 || 1440);
+  let lo = Math.min(gb, ...got.map(x => pos(x)[0])) - 30, hi = Math.max(gw, ...got.map(x => pos(x)[1])) + 30;
+  lo = Math.floor(lo / 60) * 60; hi = Math.ceil(hi / 60) * 60;
+  const Y = v => T + (H - T - B) * (v - lo) / (hi - lo);
+  const bw = (W - L - R) / n;
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart">`;
+  const step = (hi - lo) / 60 > 10 ? 120 : 60;
+  for (let v = lo; v <= hi; v += step) s += `<line x1="${L}" x2="${W - R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="#20232B"/><text x="${L - 6}" y="${(Y(v) + 3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="#5A6070">${tStr(v + 720).replace(':00', ' h')}</text>`;
+  [[gb, 'coucher'], [gw, 'lever']].forEach(([v, l]) => {
+    s += `<rect x="${L}" y="${Y(v - g.tol).toFixed(1)}" width="${W - L - R}" height="${(Y(v + g.tol) - Y(v - g.tol)).toFixed(1)}" fill="#818CF8" opacity=".07"/>
+      <line x1="${L}" x2="${W - R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="#8B90A0" stroke-dasharray="4 4"/>`;
+  });
+  nights.forEach((x, i) => {
+    const bx = L + i * bw + bw * 0.2, w = bw * 0.6;
+    s += `<g data-act="sleepDay" data-k="${x.k}" style="cursor:pointer"><rect x="${(L + i * bw).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
+    if (x.n) {
+      const [a, b] = pos(x);
+      s += `<rect x="${bx.toFixed(1)}" y="${Y(a).toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(2, Y(b) - Y(a)).toFixed(1)}" rx="${Math.min(4, w / 2).toFixed(1)}" fill="${nightColor(x.c)}" opacity="${x.k === k ? 1 : .85}"/>`;
+      if (x.k === k) s += `<rect x="${(bx - 1.5).toFixed(1)}" y="${(Y(a) - 1.5).toFixed(1)}" width="${(w + 3).toFixed(1)}" height="${(Y(b) - Y(a) + 3).toFixed(1)}" rx="5" fill="none" stroke="#F2F3F5" stroke-width="1.5"/>`;
+    }
+    if (n <= 14 || i % 5 === 4 || x.k === k) s += `<text x="${(bx + w / 2).toFixed(1)}" y="${H - 3}" text-anchor="middle" font-size="${n > 14 ? 9 : 10}" fill="${x.k === k ? '#F2F3F5' : '#5A6070'}" font-weight="700">${n > 14 ? parse(x.k).getDate() : LETTER[parse(x.k).getDay()]}</text>`;
+    s += `</g>`;
+  });
+  return s + `</svg><div class="mute small">Lignes pointillées : tes objectifs de coucher et de lever (zone claire = marge de ${S.sleep.goals.tol} min).</div>`;
+}
+
+// Saisie d'une nuit
+function openNight(k) {
+  const cur = S.sleep.log[k], g = S.sleep.goals;
+  const prev = Object.keys(S.sleep.log).filter(x => x < k).sort().pop();
+  const st = cur ? { ...cur } : prev ? { ...S.sleep.log[prev] } : { bed: g.bed, wake: g.wake };
+  openSheet('', el => {
+    const draw = () => {
+      const c = nightCheck(st);
+      el.innerHTML = `<div class="grab"></div><h2>${cur ? 'Modifier la nuit' : 'Renseigner la nuit'}</h2>
+        <div class="mute small" style="margin-bottom:16px">${nightLabel(k)}</div>
+        <div class="goalgrid">
+          <div><label class="l" for="nb">🌙 Coucher</label><input class="inp big" id="nb" type="time" value="${st.bed}"></div>
+          <div><label class="l" for="nw">☀️ Lever</label><input class="inp big" id="nw" type="time" value="${st.wake}"></div></div>
+        <div class="nprev"><b>${fmtDur(c.d)}</b> de sommeil · ${c.score}/3 objectifs
+          <span>${c.ok.dur ? '✓' : '✗'} durée · ${c.ok.bed ? '✓' : '✗'} coucher · ${c.ok.wake ? '✓' : '✗'} lever</span></div>
+        <button class="btn" data-n="save">Enregistrer</button>
+        ${cur ? '<button class="btn danger" data-n="delete">Effacer cette nuit</button>' : ''}`;
+      ['nb', 'nw'].forEach(id => $('#' + id, el).addEventListener('change', e => {
+        if (!e.target.value) return;
+        st[id === 'nb' ? 'bed' : 'wake'] = e.target.value.slice(0, 5); draw();
+      }));
+    };
+    draw();
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-n]'); if (!b) return;
+      if (b.dataset.n === 'save') {
+        const bed = $('#nb', el).value.slice(0, 5), wake = $('#nw', el).value.slice(0, 5);
+        if (!/^\d{2}:\d{2}$/.test(bed) || !/^\d{2}:\d{2}$/.test(wake)) { toast('Indique les deux heures'); return; }
+        if (bed === wake) { toast('Le coucher et le lever ne peuvent pas être à la même heure'); return; }
+        S.sleep.log[k] = { bed, wake }; save(); closeSheet(); refresh();
+        const c = nightCheck(S.sleep.log[k]);
+        toast(`Nuit enregistrée · ${fmtDur(c.d)} · ${c.score}/3 objectifs`);
+      } else if (b.dataset.n === 'delete') {
+        const old = S.sleep.log[k]; delete S.sleep.log[k]; save(); closeSheet(); refresh();
+        toast('Nuit effacée', 'Annuler', () => { S.sleep.log[k] = old; save(); refresh(); });
+      }
+    });
+  });
+}
+
+// Objectifs de sommeil
+function openSleepGoals() {
+  const g = { ...S.sleep.goals };
+  openSheet('', el => {
+    const draw = () => {
+      const span = (tMin(g.wake) - tMin(g.bed) + 1440) % 1440;
+      el.innerHTML = `<div class="grab"></div><h2>Objectifs de sommeil</h2>
+        <div class="mute small" style="margin-bottom:16px">Une nuit respecte un objectif si elle reste dans la marge choisie.</div>
+        <div class="field"><span class="l">Durée de sommeil visée</span>
+          <div class="durpick"><button data-g="dm">−</button><b>${fmtDur(g.dur)}</b><button data-g="dp">+</button></div>
+          <div class="quick">${[420, 450, 480, 510, 540].map(v => `<button data-g="dur" data-v="${v}" class="${g.dur === v ? 'on' : ''}">${fmtDur(v)}</button>`).join('')}</div></div>
+        <div class="goalgrid">
+          <div><label class="l" for="gb">Coucher avant</label><input class="inp big" id="gb" type="time" value="${g.bed}"></div>
+          <div><label class="l" for="gw">Lever vers</label><input class="inp big" id="gw" type="time" value="${g.wake}"></div></div>
+        <div class="mute small" style="margin-top:8px">Entre ces deux heures : ${fmtDur(span)}${Math.abs(span - g.dur) >= 15 ? ` (ton objectif de durée est de ${fmtDur(g.dur)})` : ''}.</div>
+        <div class="field" style="margin-top:18px"><span class="l">Marge acceptée</span>
+          <div class="seg">${[0, 15, 30, 45, 60].map(v => `<button data-g="tol" data-v="${v}" class="${g.tol === v ? 'on' : ''}">${v} min</button>`).join('')}</div>
+          <div class="mute small" style="margin-top:8px">Coucher : pas plus de ${g.tol} min après l’heure prévue. Lever : à ${g.tol} min près. Durée : au moins ${fmtDur(Math.max(0, g.dur - g.tol))}.</div></div>
+        <button class="btn" data-g="save">Enregistrer</button>`;
+      ['gb', 'gw'].forEach(id => $('#' + id, el).addEventListener('change', e => { if (e.target.value) { g[id === 'gb' ? 'bed' : 'wake'] = e.target.value.slice(0, 5); draw(); } }));
+    };
+    draw();
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-g]'); if (!b) return;
+      const a = b.dataset.g;
+      if (a === 'dm') { g.dur = Math.max(240, g.dur - 15); draw(); }
+      else if (a === 'dp') { g.dur = Math.min(720, g.dur + 15); draw(); }
+      else if (a === 'dur') { g.dur = +b.dataset.v; draw(); }
+      else if (a === 'tol') { g.tol = +b.dataset.v; draw(); }
+      else if (a === 'save') { S.sleep.goals = g; S.sleep.goalsSet = true; save(); closeSheet(); refresh(); toast('Objectifs de sommeil enregistrés'); }
+    });
+  });
 }
 
 /* ---------- Vue : Suivi ---------- */
@@ -1844,14 +2315,14 @@ function bindDrag() {
 
 /* ---------- Rendu principal ---------- */
 function renderNav() {
-  const tabs = [['today', 'Aujourd’hui', I.today], ['tasks', 'Tâches', I.tasks], ['diet', 'Alimentation', I.food], ['stats', 'Suivi', I.stats], ['habits', 'Habitudes', I.list]];
+  const tabs = [['today', 'Aujourd’hui', I.today], ['tasks', 'Tâches', I.tasks], ['diet', 'Alimentation', I.food], ['sleep', 'Sommeil', I.moon], ['stats', 'Suivi', I.stats], ['habits', 'Habitudes', I.list]];
   $('#nav').innerHTML = tabs.map(([id, label, ic]) => `<button class="${tab === id ? 'on' : ''}" data-tab="${id}">${ic}<span>${label}</span></button>`).join('');
   const fab = $('#fab');
   fab.style.display = tab === 'stats' ? 'none' : '';
-  fab.setAttribute('aria-label', tab === 'tasks' ? 'Nouvelle tâche' : tab === 'diet' ? 'Ajouter un aliment' : 'Nouvelle habitude');
+  fab.setAttribute('aria-label', tab === 'tasks' ? 'Nouvelle tâche' : tab === 'diet' ? 'Ajouter un aliment' : tab === 'sleep' ? 'Renseigner une nuit' : 'Nouvelle habitude');
 }
 function renderMain() {
-  $('#app').innerHTML = storeBanner() + (tab === 'today' ? vToday() : tab === 'tasks' ? vTasks() : tab === 'diet' ? vDiet() : tab === 'stats' ? vStats() : vHabits());
+  $('#app').innerHTML = storeBanner() + (tab === 'today' ? vToday() : tab === 'tasks' ? vTasks() : tab === 'diet' ? vDiet() : tab === 'sleep' ? vSleep() : tab === 'stats' ? vStats() : vHabits());
   if (tab === 'habits') bindDrag();
   renderNav();
 }
@@ -2181,7 +2652,7 @@ function openSettings() {
       <button class="setrow" data-s="export">${I.down}<span>Exporter une sauvegarde (.json)</span></button>
       <button class="setrow" data-s="import">${I.up}<span>Importer une sauvegarde ou un suivi de diète</span></button>
       <button class="setrow red" data-s="reset">${I.trash}<span>Tout effacer</span></button>
-      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.7</div>`;
+      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.10</div>`;
     };
     w._refresh = draw; draw();
     el.addEventListener('click', async e => {
@@ -2191,9 +2662,9 @@ function openSettings() {
       else if (s === 'export') exportData();
       else if (s === 'import') $('#importFile').click();
       else if (s === 'reset') {
-        const ok = await confirmBox('Tout effacer ?', 'Toutes tes habitudes, ton historique, tes tâches et ton suivi alimentaire seront supprimés définitivement. Exporte une sauvegarde avant si tu veux les garder.', 'Tout effacer');
+        const ok = await confirmBox('Tout effacer ?', 'Toutes tes habitudes, ton historique, tes tâches, ton suivi alimentaire et ton sommeil seront supprimés définitivement. Exporte une sauvegarde avant si tu veux les garder.', 'Tout effacer');
         if (!ok) return;
-        S = { v: 1, habits: [], tasks: [], diet: sanitizeDiet(null) }; save(); closeSheet(2); refresh(); toast('Toutes les données ont été effacées');
+        S = { v: 1, habits: [], tasks: [], diet: sanitizeDiet(null), sleep: sanitizeSleep(null) }; save(); closeSheet(2); refresh(); toast('Toutes les données ont été effacées');
       }
     });
   });
@@ -2246,10 +2717,11 @@ $('#importFile').addEventListener('change', async e => {
     && (t.repeat === undefined || t.repeat === null || cleanRepeat(t.repeat) !== null);
   if (data && data.tasks === undefined) data.tasks = [];
   if (!data || !Array.isArray(data.habits) || !data.habits.every(validHabit) || !Array.isArray(data.tasks) || !data.tasks.every(validTask)) { toast('Ce fichier n’est pas une sauvegarde Lock In valide'); return; }
-  const ok = await confirmBox('Importer cette sauvegarde ?', `Tes habitudes (${S.habits.length}), tâches (${S.tasks.length}) et ton suivi alimentaire actuels seront remplacés par ceux de la sauvegarde.`, 'Importer');
+  const ok = await confirmBox('Importer cette sauvegarde ?', `Tes habitudes (${S.habits.length}), tâches (${S.tasks.length}) ton suivi alimentaire et ton sommeil actuels seront remplacés par ceux de la sauvegarde.`, 'Importer');
   if (!ok) return;
   data.tasks.forEach(t => { if (![1, 2, 3, 4].includes(t.q)) t.q = null; t.repeat = cleanRepeat(t.repeat); });
   data.diet = sanitizeDiet(data.diet);
+  data.sleep = sanitizeSleep(data.sleep);
   S = data; save(); closeSheet(sheets.length); refresh(); toast('Sauvegarde importée');
 });
 
@@ -2335,6 +2807,14 @@ app.addEventListener('click', e => {
     case 'dietGoals': openGoals(); break;
     case 'addFood': openFoodSearch(dietView); break;
     case 'quickAdd': openQuick(dietView, null, {}); break;
+    case 'meals': openMeals(dietView); break;
+    case 'sleepPrev': sleepView = addDays(sleepView, -1); renderMain(); break;
+    case 'sleepNext': if (sleepView < todayKey()) { sleepView = addDays(sleepView, 1); renderMain(); } break;
+    case 'sleepToday': sleepView = todayKey(); renderMain(); break;
+    case 'sleepDay': if (el.dataset.k <= todayKey()) { sleepView = el.dataset.k; renderMain(); window.scrollTo({ top: 0, behavior: 'smooth' }); } break;
+    case 'sleepNight': openNight(sleepView); break;
+    case 'sleepGoals': openSleepGoals(); break;
+    case 'sleepRange': S.sleep.range = +el.dataset.v; save(); renderMain(); break;
     case 'editEntry': openEntry(dietView, el.dataset.id); break;
     case 'dietPrev': dietView = addDays(dietView, -1); dietMonth = dietView.slice(0, 7); renderMain(); break;
     case 'dietNext': if (dietView < todayKey()) { dietView = addDays(dietView, 1); dietMonth = dietView.slice(0, 7); renderMain(); } break;
@@ -2354,15 +2834,16 @@ $('#nav').addEventListener('click', e => {
   const b = e.target.closest('[data-tab]'); if (!b) return;
   tab = b.dataset.tab; if (tab === 'today') view = todayKey();
   if (tab === 'diet') { dietView = todayKey(); dietMonth = dietView.slice(0, 7); }
+  if (tab === 'sleep') sleepView = todayKey();
   renderMain(); window.scrollTo(0, 0);
 });
-$('#fab').addEventListener('click', () => tab === 'tasks' ? openTask(null) : tab === 'diet' ? openFoodSearch(dietView) : openForm(null));
+$('#fab').addEventListener('click', () => tab === 'tasks' ? openTask(null) : tab === 'diet' ? openFoodSearch(dietView) : tab === 'sleep' ? openNight(sleepView) : openForm(null));
 
 // Changement de jour quand l'appli revient au premier plan
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
   const t = todayKey();
-  if (t !== lastToday) { if (view === lastToday) view = t; if (dietView === lastToday) { dietView = t; dietMonth = t.slice(0, 7); } lastToday = t; }
+  if (t !== lastToday) { if (view === lastToday) view = t; if (dietView === lastToday) { dietView = t; dietMonth = t.slice(0, 7); } if (sleepView === lastToday) sleepView = t; lastToday = t; }
   refresh();
 });
 
