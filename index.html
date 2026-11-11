@@ -484,6 +484,7 @@ body.task-dragging{user-select:none;-webkit-user-select:none}
 .srcs summary{cursor:pointer;font-weight:700;color:#A5B4FC}
 .srcs ol{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;line-height:1.4}
 .srcs a{color:#A5B4FC;font-weight:700}
+.wup{color:#2DD4BF}.wdown{color:#FB923C}
 .naprow{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;background:var(--card2);border-radius:12px;padding:9px 12px;margin-bottom:6px;font-size:12.5px;color:var(--mute)}
 .naprow b{grid-column:1/-1;color:var(--text);font-size:13.5px}
 .napwarn{margin-top:12px;background:color-mix(in srgb,#FB923C 14%,var(--card));border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.4}
@@ -697,7 +698,7 @@ function sanitizeDiet(d) {
   const okId = v => (typeof v === 'string' && /^[a-z0-9]{1,40}$/i.test(v) ? v : uid());
   const nut = n => ({ kcal: num(n && n.kcal), p: num(n && n.p), c: num(n && n.c), f: num(n && n.f) });
   const moment = m => (MOMENT_IDS.includes(m) ? m : 'lunch');
-  const out = { goals: { kcal: 2500, p: 150, c: 300, f: 80 }, goalsSet: false, foods: [], meals: [], plan: { created: null, items: [] }, log: {}, weightHabit: null, wRange: '90', kRange: 14 };
+  const out = { goals: { kcal: 2500, p: 150, c: 300, f: 80 }, goalsSet: false, foods: [], meals: [], plan: { created: null, items: [] }, log: {}, weightHabit: null, wRange: '90', kRange: 14, waterRange: 14 };
   if (!d || typeof d !== 'object') return out;
   if (d.goals) out.goals = { kcal: num(d.goals.kcal, 2500), p: num(d.goals.p, 150), c: num(d.goals.c, 300), f: num(d.goals.f, 80) };
   out.goalsSet = !!d.goalsSet;
@@ -731,6 +732,7 @@ function sanitizeDiet(d) {
   if (typeof d.weightHabit === 'string') out.weightHabit = d.weightHabit;
   if (['30', '90', 'all'].includes(d.wRange)) out.wRange = d.wRange;
   if ([7, 14, 30].includes(d.kRange)) out.kRange = d.kRange;
+  if ([7, 14, 30].includes(d.waterRange)) out.waterRange = d.waterRange;
   return out;
 }
 let S = load();
@@ -1133,7 +1135,7 @@ function vDiet() {
   html += `<div class="daynav" style="margin-top:0"><button class="arrow" data-act="dietPrev" aria-label="Jour précédent">${I.left}</button>
     <div class="lbl">${isT ? 'Aujourd’hui' : k === addDays(t, -1) ? 'Hier' : fmtShort(k)}${isT ? '' : `<button data-act="dietToday">Revenir à aujourd’hui</button>`}</div>
     <button class="arrow" data-act="dietNext" aria-label="Jour suivant" ${isT ? 'disabled' : ''}>${I.right}</button></div>`;
-  html += dayCard(k) + planCard(k) + mealsHtml(k) + splitHtml(k) + kcalSection(k) + calendarHtml() + weightHtml();
+  html += dayCard(k) + planCard(k) + mealsHtml(k) + splitHtml(k) + kcalSection(k) + calendarHtml() + waterHtml(k) + weightHtml();
   return html;
 }
 
@@ -1252,6 +1254,95 @@ function calendarHtml() {
       <button data-act="dmNext" aria-label="Mois suivant" ${dietMonth >= t.slice(0, 7) ? 'disabled' : ''}>${I.right}</button></div>
     <div class="kcal-cal">${cells}</div>
     <div class="mute small" style="margin-top:10px">${n ? `${n} jour${n > 1 ? 's' : ''} noté${n > 1 ? 's' : ''} · moyenne ${fmtNum(r0(sum / n))} kcal. Touche un jour pour voir le détail.` : 'Aucun repas noté ce mois-ci.'}</div></div>`;
+}
+
+/* ---------- Eau (lue dans l'habitude « objectif » en L ou ml) ---------- */
+// L'eau bue est enregistrée chaque jour dans l'habitude, même si l'objectif n'est pas atteint
+function waterHabit() {
+  const isWater = h => h.type === 'goal' && (isLitre(h.unit) || /^ml$/i.test(String(h.unit || '').trim()));
+  return S.habits.find(h => isWater(h) && /eau|boire|hydrat/i.test(h.name)) || S.habits.find(isWater);
+}
+// Tout est converti en litres pour les moyennes et les graphiques
+const toL = (h, v) => /^ml$/i.test(String(h.unit || '').trim()) ? v / 1000 : v;
+const fmtL = v => v < 1 ? `${fmtNum(Math.round(v * 1000))} ml` : `${fmtNum(Math.round(v * 100) / 100)} L`;
+function createWaterHabit() {
+  const t = SUGGESTIONS.find(x => x.type === 'goal');
+  const h = { id: uid(), name: t.name, icon: t.icon, color: t.color, days: [...ALL], type: 'goal', goal: t.goal, unit: t.unit, portions: t.portions.map(x => ({ ...x })), note: '', start: todayKey(), history: {}, created: Date.now() };
+  S.habits.push(h); save(); refresh();
+  toast('Habitude « Boire 3 L d’eau » créée');
+}
+function waterHtml(k) {
+  const h = waterHabit();
+  let html = `<div class="section sec-row"><span>Eau</span>${h ? '<span class="mute small" style="text-transform:none;letter-spacing:0;font-weight:600">touche une barre pour voir le jour</span>' : ''}</div>`;
+  if (!h) return html + `<div class="ncard"><p class="mute" style="margin:0 0 4px;line-height:1.45">Le suivi de l’eau vient de ton habitude « objectif » en litres. Tu n’en as pas encore.</p>
+    <button class="btn" data-act="createWater">Créer l’habitude « Boire 3 L d’eau »</button></div>`;
+  const goal = toL(h, h.goal), val = d => toL(h, h.history[d] || 0), cur = val(k), isT = k === todayKey();
+  const pct = Math.min(1, cur / goal);
+  html += `<div class="ncard" style="--c:${h.color}">
+    <div class="wtop"><div><b>${fmtL(cur)}</b><small>/ ${fmtL(goal)} ${isT ? 'aujourd’hui' : 'le ' + fmtShort(k)}${cur >= goal - 1e-9 ? ' · ✓ objectif atteint' : cur > 0 ? ` · encore ${fmtL(goal - cur)}` : ''}</small></div><button class="gadd" data-act="drink">💧 Boire</button></div>
+    <div class="gbar" style="margin:12px 0 4px"><i style="width:${Math.round(pct * 100)}%;background:${h.color}"></i></div>`;
+  // Barres par jour
+  const range = +(S.diet.waterRange || 14);
+  const days = []; for (let i = range - 1; i >= 0; i--) days.push(addDays(k, -i));
+  const today = todayKey(), vals = days.map(val), filled = vals.filter((v, i) => v > 0 && days[i] !== today);   // journée en cours : pas encore finie, hors moyennes
+  html += `<div class="seg small-seg" style="margin-top:14px">${[[7, '7 j'], [14, '14 j'], [30, '30 j']].map(([v, l]) => `<button data-act="waterRange" data-v="${v}" class="${range === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+  if (!vals.some(v => v > 0)) html += `<div class="mute small" style="text-align:center;padding:16px 0 6px">Aucune eau notée sur cette période.</div>`;
+  else {
+    const W = 340, H = 150, P = 4, B = 16, top = 12, max = Math.max(goal * 1.25, ...vals);
+    const bw = (W - 2 * P) / range, y = v => top + (H - top - B) * (1 - v / max);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" class="chart"><line x1="${P}" x2="${W - P}" y1="${y(goal).toFixed(1)}" y2="${y(goal).toFixed(1)}" stroke="#8B90A0" stroke-dasharray="4 4"/>`;
+    days.forEach((d, i) => {
+      const v = vals[i], x = P + i * bw + bw * 0.16, w = bw * 0.68, hh = v > 0 ? Math.max(3, (H - top - B) * v / max) : 0;
+      svg += `<g data-act="dietDay" data-k="${d}" style="cursor:pointer"><rect x="${(P + i * bw).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
+      if (v > 0) svg += `<rect x="${x.toFixed(1)}" y="${(H - B - hh).toFixed(1)}" width="${w.toFixed(1)}" height="${hh.toFixed(1)}" rx="${Math.min(3, w / 3).toFixed(1)}" fill="${h.color}" opacity="${v >= goal - 1e-9 ? 1 : .45}"/>`;
+      if (v > 0 && range <= 14) svg += `<text x="${(x + w / 2).toFixed(1)}" y="${(H - B - hh - 3).toFixed(1)}" text-anchor="middle" font-size="9" fill="#8B90A0">${fmtNum(Math.round(v * 10) / 10)}</text>`;
+      if (d === k && v > 0) svg += `<rect x="${(x - 1.5).toFixed(1)}" y="${(H - B - hh - 1.5).toFixed(1)}" width="${(w + 3).toFixed(1)}" height="${(hh + 3).toFixed(1)}" rx="4" fill="none" stroke="#F2F3F5" stroke-width="1.5"/>`;
+      if (range <= 14 || i % 5 === 4 || d === k) svg += `<text x="${(x + w / 2).toFixed(1)}" y="${H - 3}" text-anchor="middle" font-size="${range > 14 ? 9 : 10}" fill="${d === k ? '#F2F3F5' : '#5A6070'}" font-weight="700">${range > 14 ? parse(d).getDate() : LETTER[parse(d).getDay()]}</text>`;
+      svg += `</g>`;
+    });
+    svg += `</svg>`;
+    const avg = filled.length ? filled.reduce((a, b) => a + b, 0) / filled.length : 0, reached = filled.filter(v => v >= goal - 1e-9).length;
+    html += svg + `<div class="legend" style="margin-top:6px"><span><i style="background:${h.color}"></i>Objectif atteint</span><span><i style="background:${h.color};opacity:.45"></i>Pas atteint (eau bue quand même)</span><span><i style="background:none;border-top:2px dashed #8B90A0;border-radius:0;height:0;vertical-align:3px"></i>Objectif ${fmtL(goal)}</span></div>
+      <div class="wstats" style="margin-bottom:0"><div><b>${filled.length ? fmtL(avg) : '—'}</b><span>par jour en moyenne</span></div>
+        <div><b>${reached} / ${filled.length}</b><span>jours à ${fmtL(goal)}</span></div>
+        <div><b>${filled.length} / ${days.filter(d => d !== today).length}</b><span>jours notés</span></div></div>`;
+  }
+  html += `<div class="mute small" style="margin-top:10px">Les moyennes comptent les jours où de l’eau a été notée, sans aujourd’hui (journée pas finie).</div></div>`;
+  return html + waterWeekly(h, k, goal);
+}
+// Moyenne par semaine (lundi → dimanche), 8 dernières semaines
+function waterWeekly(h, k, goal) {
+  const mon0 = addDays(k, -((parse(k).getDay() + 6) % 7));
+  const weeks = [];
+  for (let w = 7; w >= 0; w--) {
+    const mon = addDays(mon0, -7 * w), vals = [];
+    for (let i = 0; i < 7; i++) { const d = addDays(mon, i); if (d > k || d === todayKey()) break; const v = toL(h, h.history[d] || 0); if (v > 0) vals.push(v); }
+    weeks.push({ mon, n: vals.length, avg: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null, ok: vals.filter(v => v >= goal - 1e-9).length });
+  }
+  const got = weeks.filter(w => w.avg !== null);
+  if (!got.length) return '';
+  const W = 340, H = 150, T = 18, B = 30, P = 6, max = Math.max(goal * 1.2, ...got.map(w => w.avg));
+  const bw = (W - 2 * P) / weeks.length, y = v => T + (H - T - B) * (1 - v / max);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" class="chart"><line x1="${P}" x2="${W - P}" y1="${y(goal).toFixed(1)}" y2="${y(goal).toFixed(1)}" stroke="#8B90A0" stroke-dasharray="4 4"/>`;
+  weeks.forEach((w, i) => {
+    const x = P + i * bw + bw * 0.2, bwid = bw * 0.6;
+    if (w.avg !== null) {
+      const hh = Math.max(3, (H - T - B) * w.avg / max);
+      svg += `<rect x="${x.toFixed(1)}" y="${(H - B - hh).toFixed(1)}" width="${bwid.toFixed(1)}" height="${hh.toFixed(1)}" rx="3" fill="${h.color}" opacity="${w.avg >= goal - 1e-9 ? 1 : .45}"/>
+        <text x="${(x + bwid / 2).toFixed(1)}" y="${(H - B - hh - 4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="#F2F3F5">${fmtNum(Math.round(w.avg * 10) / 10)}</text>`;
+    }
+    svg += `<text x="${(x + bwid / 2).toFixed(1)}" y="${H - 16}" text-anchor="middle" font-size="9.5" fill="${i === weeks.length - 1 ? '#F2F3F5' : '#8B90A0'}">${parse(w.mon).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</text>
+      <text x="${(x + bwid / 2).toFixed(1)}" y="${H - 4}" text-anchor="middle" font-size="9" fill="#5A6070">${w.n ? `${w.ok}/${w.n} j` : ''}</text>`;
+  });
+  svg += `</svg>`;
+  const cur = weeks[weeks.length - 1], prev = weeks[weeks.length - 2];
+  let cmp = '';
+  if (cur.avg !== null && prev.avg !== null) {
+    const d = cur.avg - prev.avg;
+    cmp = `<div class="pace" style="margin:4px 6px 2px">Cette semaine : <b>${fmtL(cur.avg)} / jour</b> · ${Math.abs(d) < 0.05 ? 'comme la semaine dernière' : `<b class="${d > 0 ? 'wup' : 'wdown'}">${d > 0 ? '+' : '−'}${fmtL(Math.abs(d))}</b> par rapport à la semaine dernière (${fmtL(prev.avg)})`}</div>`;
+  } else if (cur.avg !== null) cmp = `<div class="pace" style="margin:4px 6px 2px">Cette semaine : <b>${fmtL(cur.avg)} / jour</b></div>`;
+  return `<div class="subhead">Moyenne par semaine <span class="mute small">(litres par jour noté, semaine du lundi)</span></div><div class="ncard" style="padding:10px">${cmp}${svg}
+    <div class="mute small" style="padding:0 6px 4px">Sous chaque semaine : jours à l’objectif / jours notés.</div></div>`;
 }
 
 /* ---------- Poids (lu dans l'habitude de pesée) ---------- */
@@ -3641,7 +3732,7 @@ function openSettings() {
       <button class="setrow" data-s="export">${I.down}<span>Exporter une sauvegarde (.json)</span></button>
       <button class="setrow" data-s="import">${I.up}<span>Importer une sauvegarde ou un suivi de diète</span></button>
       <button class="setrow red" data-s="reset">${I.trash}<span>Tout effacer</span></button>
-      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.18</div>`;
+      <div class="mute small" style="text-align:center;margin-top:18px">Lock In · v1.19</div>`;
     };
     w._refresh = draw; draw();
     el.addEventListener('click', async e => {
@@ -3837,6 +3928,9 @@ app.addEventListener('click', e => {
     case 'createWeight': createWeightHabit(); break;
     case 'weighIn': { const wh = weightHabit(); if (wh) tapHabit(wh, todayKey()); break; }
     case 'wRange': S.diet.wRange = el.dataset.v; save(); renderMain(); break;
+    case 'waterRange': S.diet.waterRange = +el.dataset.v; save(); renderMain(); break;
+    case 'drink': { const wh = waterHabit(); if (wh) openGoal(wh, dietView); break; }
+    case 'createWater': createWaterHabit(); break;
     case 'goTasks': tab = 'tasks'; renderMain(); window.scrollTo(0, 0); break;
   }
 });
